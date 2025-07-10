@@ -1,2 +1,93 @@
+/* @import "tailwindcss";
+@plugin "daisyui";
+
+
+:root {
+  --color-primary: #0D47A1;
+  --color-secondary: #FF9800;
+}
+
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: base-200;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
+
+/* index.css */
+
 @import "tailwindcss";
 @plugin "daisyui";
+
+@tailwind utilities;
+
+:root {
+  --color-primary: #4f46e5; /* Indigo-600 */
+  --color-primary-light: #6366f1; /* Indigo-500 */
+  --color-secondary: #10b981; /* Emerald-500 */
+  --bg-color: #f9fafb; /* light gray bg */
+}
+
+@layer base {
+  body {
+    @apply bg-[#F9FAFB] text-gray-800 font-sans;
+  }
+}
+
+
+@layer components {
+  /* Reusable gradient text class */
+  .text-primary-gradient {
+    @apply bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 bg-clip-text text-transparent;
+  }
+
+  /* Reusable button style */
+  @layer components {
+    .btn-primary {
+      @apply btn btn-md rounded-full text-white font-semibold shadow-lg
+           bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700
+           hover:scale-105 hover:from-indigo-500 hover:to-indigo-600
+           transition-all duration-300 border border-indigo-200/10;
+    }
+  }
+
+  /* @layer components {
+    .btn-secondary {
+      @apply btn btn-md rounded-full text-white font-semibold shadow-lg
+           bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-600
+           hover:scale-105 hover:from-emerald-400 hover:to-emerald-500
+           transition-all duration-300 border border-emerald-200/10;
+    }
+  } */
+
+
+  @layer components {
+  .btn-secondary {
+    @apply btn rounded-full text-white font-bold px-6 py-2
+           bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500
+           hover:from-sky-400 hover:to-indigo-600 transition-all duration-300;
+  }
+}
+
+
+  /* Container section background */
+  .section-bg {
+    @apply bg-white rounded-2xl shadow-md p-6;
+  }
+
+  .navbar {
+    @apply sticky top-0 z-50 bg-white shadow-md px-4 py-2 border-b border-gray-200;
+  }
+
+  /* Table header and body cells */
+  .table-header {
+    @apply bg-indigo-50 text-indigo-700 font-semibold;
+  }
+
+  .table-row {
+    @apply bg-white hover:bg-indigo-50 transition duration-200;
+  }
+}
