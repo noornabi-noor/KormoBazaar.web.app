@@ -2,6 +2,7 @@ import React, { use } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
+import MySubmissions from './../../Worker/MySubmissions/MySubmissions';
 
 const Navbar = () => {
   const { user, logoutUser } = use(AuthContext);
@@ -21,15 +22,19 @@ const Navbar = () => {
     <li>
       <NavLink to="/">Home</NavLink>
     </li>
-    {/* <li>
-      <NavLink to="/sendParcel">Send A Parcel</NavLink>
+    <li>
+      <NavLink to="/addTasks">Add Tasks</NavLink>
     </li>
     <li>
-      <NavLink to="/location">Location</NavLink>
+      <NavLink to="/myTasks">My Tasks</NavLink>
     </li>
-     <li>
-      <NavLink to="/coverage">Coverage</NavLink>
-    </li> */}
+    <li>
+      <NavLink to="/taskList">TaskList</NavLink>
+    </li>
+    <li>
+      <NavLink to="/mySubmission">MySubmissions</NavLink>
+    </li>
+   
     <li>
       <NavLink to="/about">About Us</NavLink>
     </li>

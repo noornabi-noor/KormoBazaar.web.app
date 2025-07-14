@@ -1,10 +1,18 @@
 import React from 'react';
 import Banner from '../Banner/Banner';
+import HowItWorks from '../HowItWorks/HowItWorks';
+import LiveStats from '../LiveStats/LiveStats';
+import CommunitySection from '../CommunitySection/CommunitySection';
+import WeeklyPaymentSection from '../WeeklyPaymentSection/WeeklyPaymentSection';
 
 const Home = () => {
     return (
         <div>
             <Banner/>
+            <CommunitySection/>
+            <WeeklyPaymentSection/>
+            <HowItWorks/>
+            <LiveStats/>
         </div>
     );
 };
