@@ -33,8 +33,8 @@ async function run() {
 
     const db = client.db("userDB");
     const usersCollection = db.collection("users");
-
     const tasksCollection = db.collection("tasks");
+    const submissionsCollection = db.collection("submissions");
 
 
     app.get('/users',async(req,res)=>{
@@ -134,8 +134,6 @@ async function run() {
         }
     });
 
-
-
     app.post('/add-task', async (req, res) => {
         try {
             const {
@@ -173,6 +171,7 @@ async function run() {
 
             const task = {
             buyer_email,
+            buyer_name: buyer.name,
             task_title,
             task_detail,
             required_workers,
@@ -241,7 +240,91 @@ async function run() {
             res.status(500).json({ success: false, message: "Update failed" });
         }
     });
-    
+
+     // ==============================
+    // ➕ Worker part
+    // ==============================
+
+    app.get('/available-tasks', async (req, res) => {
+        try {
+            const tasks = await tasksCollection.find({ required_workers: { $gt: 0 } }).toArray();
+            res.send(tasks);
+        } catch (error) {
+            res.status(500).send({ message: "Failed to fetch tasks" });
+        }
+    });
+
+    app.get('/task/:id', async (req, res) => {
+            const { id } = req.params;
+
+            try {
+                const task = await tasksCollection.findOne({ _id: new ObjectId(id) });
+
+                if (!task) {
+                return res.status(404).json({ message: "Task not found" });
+                }
+
+                const buyer = await usersCollection.findOne({ email: task.buyer_email });
+
+                const taskWithBuyerName = {
+                ...task,
+                buyer_name: buyer?.name || task.buyer_email, // fallback if name missing
+                };
+
+                res.send(taskWithBuyerName);
+            } catch (err) {
+                console.error("Task fetch error:", err);
+                res.status(500).json({ message: "Task fetch failed" });
+            }
+        });
+
+
+    app.post('/submit-task', async (req, res) => {
+        const submission = req.body;
+        try {
+            // Fetch worker and buyer details
+            const worker = await usersCollection.findOne({ email: submission.worker_email });
+            const buyer = await usersCollection.findOne({ email: submission.buyer_email });
+
+            // Construct full submission payload
+            const fullSubmission = {
+            ...submission,
+            worker_name: worker?.name || submission.worker_email,
+            buyer_name: buyer?.name || submission.buyer_email,
+            submittedAt: new Date()
+            };
+
+            // Insert into collection
+            await submissionsCollection.insertOne(fullSubmission);
+
+            // Decrement available workers for task
+            await tasksCollection.updateOne(
+            { _id: new ObjectId(submission.task_id) },
+            { $inc: { required_workers: -1 } }
+            );
+
+            res.json({ success: true, message: "Submission saved" });
+        } catch (error) {
+            console.error("Submission error:", error);
+            res.status(500).json({ success: false, message: "Server error" });
+        }
+    });
+
+
+    app.get('/my-submissions/:email', async (req, res) => {
+        const { email } = req.params;
+        try {
+            const submissions = await submissionsCollection
+            .find({ worker_email: email })
+            .sort({ submittedAt: -1 }) // Newest first
+            .toArray();
+
+            res.json(submissions);
+        } catch (error) {
+            console.error("My submissions fetch error:", error);
+            res.status(500).json({ message: "Failed to fetch submissions" });
+        }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
