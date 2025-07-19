@@ -3,8 +3,13 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
+
+
+
 // Load environment variables
 dotenv.config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,12 +40,9 @@ async function run() {
     const usersCollection = db.collection("users");
     const tasksCollection = db.collection("tasks");
     const submissionsCollection = db.collection("submissions");
+    const paymentCollection = db.collection("payments");
 
 
-    app.get('/users',async(req,res)=>{
-        const users = await usersCollection.find().toArray();
-        res.send(users);
-    });
 
     //users API
     app.get('/users',async(req,res) => {
@@ -240,6 +242,85 @@ async function run() {
             res.status(500).json({ success: false, message: "Update failed" });
         }
     });
+
+
+        //get payment
+    app.get('/payments', async(req,res) =>{
+      try{
+        const userEmail = req.query.email;
+
+        if(req.decoded.email !== userEmail){
+          return res.status(403).send({message: 'forbiddedn access'});
+        }
+
+        const query = userEmail?{email:userEmail}:{};
+        const options = {sort: {paid_at:-1}};
+
+        const payments = await paymentCollection.find(query,options).
+        toArray();
+        res.send(payments);
+      }catch(error){
+        console.log('Error fetching payment history: ', error);
+        res.status(500).send({ message: 'Failed to get payments' });
+      }
+    });
+
+
+    //POST: Record payment and update parcel status
+    app.post('/payments', async (req,res)=>{
+      try{
+        const { email, amount, coins, paymentMethod, transactionId } = req.body;
+
+        if(!email || !amount){
+            return res.status(400).send({message: 'Email and amount are required'});
+        }
+
+        // 2. Insert payment record
+        const paymentDoc = {
+            email,
+            amount,
+            coins,
+            paymentMethod,
+            transactionId,
+            paid_at_string: new Date().toISOString(),
+            paid_at: new Date(),
+        };
+
+        const paymentResult = await paymentCollection.insertOne(paymentDoc);
+
+        // Step 3: Increase coins in user's collection
+        const updateResult = await usersCollection.updateOne(
+            { email },
+            { $inc: { coins: coins } } 
+        );
+
+        return res.status(201).send({
+          message: 'Payment recorded and parcel marked as paid',
+          insertedId: paymentResult.insertedId,
+        });
+      }catch (error) {
+        console.error('Error processing payment:', error);
+        res.status(500).send({ message: 'Failed to process payment' });
+      }
+    });
+
+
+    app.post('/create-payment-intent', async (req,res) => {
+      const amountInCents = req.body.amountInCents;
+      try{
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amountInCents,
+          currency: 'usd',
+          payment_method_types: ['card'],
+        });
+        res.json({
+          clientSecret: paymentIntent.client_secret
+        });
+      }catch(error){
+        res.status(500).json({error: MongoExpiredSessionError.message});
+      }
+    });
+
 
      // ==============================
     // ➕ Worker part
