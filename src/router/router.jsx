@@ -12,7 +12,7 @@ import TaskDetails from "../pages/Worker/TaskDetails/TaskDetails";
 import MySubmissions from "../pages/Worker/MySubmissions/MySubmissions";
 import Payment from "../pages/Worker/Payment/Payment";
 import PurchaseCoins from "../pages/Worker/PurchaseCoins/PurchaseCoins";
-
+import PaymentHistory from "../pages/Buyer/PaymentHistory/PaymentHistory";
 
 export const router = createBrowserRouter([
   {
@@ -47,9 +47,12 @@ export const router = createBrowserRouter([
       },
       {
         path: "/payment",
-        Component: Payment
+        Component: Payment,
       },
-      
+      {
+        path: "paymentHistory",
+        Component: PaymentHistory,
+      },
     ],
   },
   {

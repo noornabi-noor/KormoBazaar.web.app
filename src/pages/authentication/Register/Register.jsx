@@ -95,23 +95,53 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signInWithGoogle()
-      .then((result) => {
-        toast.success(`✅ Signed in as ${result.user.displayName}`);
-        setTimeout(() => navigate("/"), 1000);
-        setError("");
-      })
-      .catch((error) => {
-        setError(error.message);
-        toast.error(`❌ ${error.message}`);
+  // const handleGoogleSignIn = () => {
+  //   signInWithGoogle()
+  //     .then((result) => {
+  //       toast.success(`✅ Signed in as ${result.user.displayName}`);
+  //       setTimeout(() => navigate("/"), 1000);
+  //       setError("");
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //       toast.error(`❌ ${error.message}`);
+  //     });
+  // };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithGoogle();
+      const user = result.user;
+
+      // Extract name and photo
+      const name = user.displayName;
+      const email = user.email;
+      const photoURL = user.photoURL;
+      const role = "buyer"; // or prompt the user to select role if needed
+
+      // 💾 Save to backend
+      await axiosSecure.post("/register", {
+        name,
+        email,
+        photoURL,
+        role,
       });
+
+      toast.success(`✅ Signed in as ${name}`);
+      setError("");
+      setTimeout(() => navigate("/"), 1000);
+    } catch (error) {
+      setError(error.message);
+      toast.error(`❌ ${error.message}`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
       <div className="w-full max-w-md bg-base-300 p-8 rounded-xl shadow-lg">
-        <h2 className="text-primary-gradient text-center text-4xl mb-12">Register</h2>
+        <h2 className="text-primary-gradient text-center text-4xl mb-12">
+          Register
+        </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <input
@@ -120,7 +150,9 @@ const Register = () => {
             placeholder="Full Name"
             className="input input-bordered w-full"
           />
-          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+          {errors.name && (
+            <p className="text-red-500 text-sm">{errors.name.message}</p>
+          )}
 
           <input
             type="email"
@@ -128,7 +160,9 @@ const Register = () => {
             placeholder="Email"
             className="input input-bordered w-full"
           />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-sm">{errors.email.message}</p>
+          )}
 
           <input
             type="file"
@@ -136,7 +170,9 @@ const Register = () => {
             {...register("photo", { required: "Profile image is required" })}
             className="input input-bordered w-full"
           />
-          {errors.photo && <p className="text-red-500 text-sm">{errors.photo.message}</p>}
+          {errors.photo && (
+            <p className="text-red-500 text-sm">{errors.photo.message}</p>
+          )}
 
           <select
             {...register("role", { required: "Please select a role" })}
@@ -146,7 +182,9 @@ const Register = () => {
             <option value="worker">Worker</option>
             <option value="buyer">Buyer</option>
           </select>
-          {errors.role && <p className="text-red-500 text-sm">{errors.role.message}</p>}
+          {errors.role && (
+            <p className="text-red-500 text-sm">{errors.role.message}</p>
+          )}
 
           <input
             type="password"
@@ -154,7 +192,9 @@ const Register = () => {
             placeholder="Password"
             className="input input-bordered w-full"
           />
-          {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-sm">{errors.password.message}</p>
+          )}
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 

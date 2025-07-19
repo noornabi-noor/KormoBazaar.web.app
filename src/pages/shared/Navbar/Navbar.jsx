@@ -2,13 +2,13 @@ import React, { use } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
-import MySubmissions from './../../Worker/MySubmissions/MySubmissions';
+import MySubmissions from "./../../Worker/MySubmissions/MySubmissions";
 
 const Navbar = () => {
   const { user, logOut } = use(AuthContext);
   const location = useLocation();
 
-    const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       await logOut();
       toast.success("✅ Logged out successfully");
@@ -18,30 +18,35 @@ const Navbar = () => {
     }
   };
 
-  const navItems= <>
-    <li>
-      <NavLink to="/">Home</NavLink>
-    </li>
-    <li>
-      <NavLink to="/addTasks">Add Tasks</NavLink>
-    </li>
-    <li>
-      <NavLink to="/myTasks">My Tasks</NavLink>
-    </li>
-    <li>
-      <NavLink to="/taskList">TaskList</NavLink>
-    </li>
-    <li>
-      <NavLink to="/mySubmission">MySubmissions</NavLink>
-    </li>
-    <li>
-      <NavLink to="/purchaseCoins">PurchaseCoins</NavLink>
-    </li>
-   
-    <li>
-      <NavLink to="/about">About Us</NavLink>
-    </li>
-  </>;
+  const navItems = (
+    <>
+      <li>
+        <NavLink to="/">Home</NavLink>
+      </li>
+      <li>
+        <NavLink to="/addTasks">Add Tasks</NavLink>
+      </li>
+      <li>
+        <NavLink to="/myTasks">My Tasks</NavLink>
+      </li>
+      <li>
+        <NavLink to="/taskList">TaskList</NavLink>
+      </li>
+      <li>
+        <NavLink to="/mySubmission">MySubmissions</NavLink>
+      </li>
+      <li>
+        <NavLink to="/purchaseCoins">PurchaseCoins</NavLink>
+      </li>
+      <li>
+        <NavLink to="/paymentHistory">Payment History</NavLink>
+      </li>
+
+      <li>
+        <NavLink to="/about">About Us</NavLink>
+      </li>
+    </>
+  );
 
   return (
     <div className="navbar bg-gradient-to-tr from-indigo-50 via-blue-100 to-sky-50 shadow-md rounded-xl">
@@ -68,22 +73,21 @@ const Navbar = () => {
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
-          {navItems}
+            {navItems}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl "><KormoBazaarLogo/></a>
+        <a className="btn btn-ghost text-xl ">
+          <KormoBazaarLogo />
+        </a>
       </div>
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-        {navItems}
-        </ul>
+        <ul className="menu menu-horizontal px-1">{navItems}</ul>
       </div>
       {/* <div className="navbar-end">
         <Link to="/login" className="btn-secondary ">Login</Link>
       </div> */}
 
-
-            <div className="navbar-end gap-1.5 md:gap-3">
+      <div className="navbar-end gap-1.5 md:gap-3">
         {user ? (
           <>
             <div className="relative group mr-3 md:mr-5">
@@ -131,8 +135,6 @@ const Navbar = () => {
           )}
         </button> */}
       </div>
-
-
     </div>
   );
 };
