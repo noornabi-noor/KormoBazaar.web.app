@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import RootLayouts from './../layouts/RootLayouts';
+import RootLayouts from "./../layouts/RootLayouts";
 import Home from "../pages/Home/Home/Home";
 import Login from "../pages/authentication/Login/Login";
 import Register from "../pages/authentication/Register/Register";
@@ -10,6 +10,8 @@ import MyTasks from "../pages/Buyer/MyTasks/MyTasks";
 import TaskList from "../pages/Worker/TaskList/TaskList";
 import TaskDetails from "../pages/Worker/TaskDetails/TaskDetails";
 import MySubmissions from "../pages/Worker/MySubmissions/MySubmissions";
+import Payment from "../pages/Worker/Payment/Payment";
+import PurchaseCoins from "../pages/Worker/PurchaseCoins/PurchaseCoins";
 
 
 export const router = createBrowserRouter([
@@ -23,22 +25,31 @@ export const router = createBrowserRouter([
       },
       {
         path: "myProfile",
-        Component: MyProfile
+        Component: MyProfile,
       },
       {
         path: "addTasks",
-        Component: AddTasks
+        Component: AddTasks,
       },
       {
         path: "myTasks",
-        Component: MyTasks
+        Component: MyTasks,
       },
       {
         path: "taskList",
-        Component: TaskList
+        Component: TaskList,
       },
       { path: "task/:id", Component: TaskDetails },
       { path: "mySubmission", Component: MySubmissions },
+      {
+        path: "/purchaseCoins",
+        Component: PurchaseCoins,
+      },
+      {
+        path: "/payment",
+        Component: Payment
+      },
+      
     ],
   },
   {

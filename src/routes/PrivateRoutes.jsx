@@ -1,6 +1,6 @@
 // src/routes/PrivateRoutes.jsx
 import React from 'react';
-import { Navigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import UseAuth from '../hooks/UseAuth';
 
 /**
@@ -11,13 +11,14 @@ import UseAuth from '../hooks/UseAuth';
 
 const PrivateRoutes = ({ children, allowedRoles }) => {
   const { user, loading } = UseAuth();
+  const location = useLocation();
 
   if (loading) {
     return <span className="loading loading-spinner loading-xl"></span>;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate state={{from: location.pathname}} to="/login" />;
   }
 
   // ✅ Role check if allowedRoles is provided

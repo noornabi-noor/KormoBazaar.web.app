@@ -16,7 +16,7 @@ const Login = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const from = location.state || "/";
+  const from = location.state?.from || "/";
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ const Login = () => {
       toast.success(`✅ Logged in as ${user.displayName || user.email}`);
 
       setTimeout(() => {
-        navigate("/");
+        navigate(from);
       }, 2000);
     } catch (err) {
       setError(err.message);
@@ -54,7 +54,7 @@ const Login = () => {
         const user = result.user;
         toast.success(`✅ Signed in as ${user.displayName}`);
         setTimeout(() => {
-          navigate("/");
+          navigate(from);
         }, 1000);
         setError("");
       })

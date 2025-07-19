@@ -10,7 +10,7 @@ const LiveStats = ({ stats }) => {
   } = stats || {};
 
   return (
-    <section className="py-12 bg-gradient-to-r from-purple-100 to-pink-100 mt-12 rounded-2xl">
+    <section className="py-20 bg-gradient-to-r from-purple-100 to-pink-100 mt-12 rounded-2xl">
       <h2 className="text-3xl font-bold text-center mb-8">Platform Stats</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-6 text-center">
         <motion.div

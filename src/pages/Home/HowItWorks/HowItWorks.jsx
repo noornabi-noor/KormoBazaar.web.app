@@ -4,7 +4,7 @@ import { FaTasks, FaCheckCircle, FaCoins, FaClipboardList, FaSearch, FaUserShiel
 
 const HowItWorks = () => {
   return (
-    <section className="py-12 bg-gradient-to-br from-gray-50 via-white to-blue-50">
+    <section className="py-20 bg-gradient-to-br from-gray-200 via-white to-blue-100 rounded-2xl mt-12">
       <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
         {/* Worker */}

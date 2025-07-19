@@ -34,6 +34,9 @@ const Navbar = () => {
     <li>
       <NavLink to="/mySubmission">MySubmissions</NavLink>
     </li>
+    <li>
+      <NavLink to="/purchaseCoins">PurchaseCoins</NavLink>
+    </li>
    
     <li>
       <NavLink to="/about">About Us</NavLink>
@@ -68,7 +71,7 @@ const Navbar = () => {
           {navItems}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl"><KormoBazaarLogo/></a>
+        <a className="btn btn-ghost text-xl "><KormoBazaarLogo/></a>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
