@@ -12,7 +12,7 @@ import loginLottie from "../../../assets/LottiesFile/login.json";
 const Login = () => {
   const [error, setError] = useState("");
 
-  const { loginUser, signInWithGoogle, passwordReset } = use(AuthContext);
+  const { signIn, signInWithGoogle, passwordReset } = use(AuthContext);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const Login = () => {
     }
 
     try {
-      const result = await loginUser(email, password);
+      const result = await signIn(email, password);
       const user = result.user;
       toast.success(`✅ Logged in as ${user.displayName || user.email}`);
 

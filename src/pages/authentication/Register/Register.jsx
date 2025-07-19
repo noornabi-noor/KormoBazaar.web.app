@@ -1,107 +1,105 @@
-import React, { use, useState } from "react";
-import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
-import { Link, useNavigate } from "react-router";
-
-import { FcGoogle } from "react-icons/fc";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { updateProfile } from "firebase/auth";
-
 import Lottie from "lottie-react";
 import registerLottie from "../../../assets/LottiesFile/register.json";
+import { FcGoogle } from "react-icons/fc";
+
+import UseAuth from "../../../hooks/UseAuth";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Register = () => {
   const [error, setError] = useState("");
+  const [profilePic, setProfilePic] = useState("");
   const navigate = useNavigate();
 
-  const { createUser, signInWithGoogle } = use(AuthContext);
+  const { createUser, signInWithGoogle, updateUserProfile } = UseAuth();
+  const axiosSecure = useAxiosSecure();
+  const imageUploadKey = import.meta.env.VITE_image_upload_key;
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    const form = e.target;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-    // ✅ Collect form values
-    const name = form.name.value;
-    const email = form.email.value;
-    const password = form.password.value;
-    const photoURL = form.photo.value;
-    const role = form.role.value; // comes from the <select> input
+  // 🖼️ Image Upload Handler
+  const handleImageUpload = async (imageFile) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
 
-    // ✅ Validate image URL
-    if (!photoURL.startsWith("http")) {
-      const msg =
-        "Please provide a valid image URL starting with http or https";
-      setError(msg);
-      toast.error(msg);
-      return;
+    try {
+      const response = await fetch(
+        `https://api.imgbb.com/1/upload?key=${imageUploadKey}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const imgData = await response.json();
+      if (!imgData.success) throw new Error("Image upload failed");
+      return imgData.data.url;
+    } catch (err) {
+      toast.error("❌ Failed to upload image");
+      console.error("ImgBB error:", err.message);
+      return "";
     }
+  };
 
-    // ✅ Validate password strength
+  const onSubmit = async (data) => {
+    const { name, email, password, photo, role } = data;
+    const photoFile = photo[0];
+
+    // 🔐 Validate password
     if (
       password.length < 6 ||
       !/[A-Z]/.test(password) ||
       !/[a-z]/.test(password)
     ) {
       const msg =
-        "Password must be at least 6 characters and include upper and lower case letters";
+        "Password must be at least 6 characters and include uppercase and lowercase letters";
       setError(msg);
       toast.error(msg);
       return;
     }
 
+    // 🖼️ Upload image first
+    const uploadedUrl = await handleImageUpload(photoFile);
+    if (!uploadedUrl) return;
+    setProfilePic(uploadedUrl);
+
     try {
-      // ✅ Create user with Firebase Auth (or your auth system)
+      // 👤 Create Firebase user
       const result = await createUser(email, password);
 
-      // ✅ Set display name and photo
-      await updateProfile(result.user, {
+      // 🔄 Update Firebase profile
+      await updateUserProfile({
         displayName: name,
-        photoURL,
+        photoURL: uploadedUrl,
       });
 
-      // ✅ Send user info to your Express backend
-      const registerResponse = await fetch("http://localhost:5000/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          photoURL,
-          role,
-        }),
+      // 💾 Save to backend
+      await axiosSecure.post("/register", {
+        name,
+        email,
+        photoURL: uploadedUrl,
+        role,
       });
 
-      const registerData = await registerResponse.json();
-
-      if (!registerResponse.ok) {
-        throw new Error(
-          registerData.message || "Failed to save user to database"
-        );
-      }
-
-      // ✅ Success feedback
-      toast.success(`✅ Registered successfully as ${name}`);
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
-
-      form.reset();
+      toast.success(`✅ Registered as ${name}`);
+      setTimeout(() => navigate("/"), 1000);
     } catch (err) {
-      console.error("Registration error:", err.message);
       setError(err.message);
       toast.error(`❌ ${err.message}`);
     }
   };
-  
+
   const handleGoogleSignIn = () => {
     signInWithGoogle()
       .then((result) => {
-        const user = result.user;
-        toast.success(`✅ Signed in as ${user.displayName}`);
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        toast.success(`✅ Signed in as ${result.user.displayName}`);
+        setTimeout(() => navigate("/"), 1000);
         setError("");
       })
       .catch((error) => {
@@ -111,60 +109,56 @@ const Register = () => {
   };
 
   return (
-    <div className="work-sans-text min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
-      {/* Register Box */}
+    <div className="min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
       <div className="w-full max-w-md bg-base-300 p-8 rounded-xl shadow-lg">
-        <h2 className="text-primary-gradient text-center text-4xl mb-12">
-          Register
-        </h2>
+        <h2 className="text-primary-gradient text-center text-4xl mb-12">Register</h2>
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <input
             type="text"
-            name="name"
+            {...register("name", { required: "Name is required" })}
             placeholder="Full Name"
             className="input input-bordered w-full"
-            required
           />
+          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+
           <input
             type="email"
-            name="email"
+            {...register("email", { required: "Email is required" })}
             placeholder="Email"
             className="input input-bordered w-full"
-            required
           />
+          {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+
           <input
-            type="text"
-            name="photo"
-            placeholder="Profile Image URL"
+            type="file"
+            accept="image/*"
+            {...register("photo", { required: "Profile image is required" })}
             className="input input-bordered w-full"
-            required
           />
+          {errors.photo && <p className="text-red-500 text-sm">{errors.photo.message}</p>}
 
           <select
-            name="role"
+            {...register("role", { required: "Please select a role" })}
             className="select select-bordered w-full"
-            required
           >
             <option value="">Select Role</option>
             <option value="worker">Worker</option>
             <option value="buyer">Buyer</option>
           </select>
+          {errors.role && <p className="text-red-500 text-sm">{errors.role.message}</p>}
 
           <input
             type="password"
-            name="password"
+            {...register("password", { required: "Password is required" })}
             placeholder="Password"
             className="input input-bordered w-full"
-            required
           />
+          {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <button
-            type="submit"
-            className="btn-secondary relative z-10 text-sm rounded-full w-full"
-          >
+          <button type="submit" className="btn-secondary rounded-full w-full">
             Register
           </button>
         </form>
@@ -187,9 +181,8 @@ const Register = () => {
         </p>
       </div>
 
-      {/* Lottie Animation */}
       <div className="w-full max-w-md flex justify-center items-center">
-        <Lottie animationData={registerLottie} loop={true} />
+        <Lottie animationData={registerLottie} loop />
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} />

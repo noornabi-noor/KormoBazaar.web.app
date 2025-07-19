@@ -5,12 +5,12 @@ import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
 import MySubmissions from './../../Worker/MySubmissions/MySubmissions';
 
 const Navbar = () => {
-  const { user, logoutUser } = use(AuthContext);
+  const { user, logOut } = use(AuthContext);
   const location = useLocation();
 
     const handleLogout = async () => {
     try {
-      await logoutUser();
+      await logOut();
       toast.success("✅ Logged out successfully");
       navigate("/login");
     } catch (err) {

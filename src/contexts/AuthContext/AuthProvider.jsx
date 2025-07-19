@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  updateProfile,
 } from "firebase/auth";
 
 const googleProvider = new GoogleAuthProvider();
@@ -23,7 +24,7 @@ const AuthProvider = ({ children }) => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  const loginUser = (email, password) => {
+  const signIn = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
@@ -33,14 +34,18 @@ const AuthProvider = ({ children }) => {
     return signInWithPopup(auth, googleProvider);
   };
 
-  const logoutUser = () => {
-    setLoading(true);
-    return signOut(auth);
+  const updateUserProfile = profileInfo => {
+    return updateProfile(auth.currentUser,profileInfo);
   };
 
   const passwordReset = (email) => {
+  setLoading(true);
+  return sendPasswordResetEmail(auth, email);
+};
+
+  const logOut = () => {
     setLoading(true);
-    return sendPasswordResetEmail(auth, email);
+    return signOut(auth);
   };
 
   useEffect(() => {
@@ -54,13 +59,14 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const authInfo = {
-    loading,
     user,
     createUser,
-    loginUser,
+    signIn,
     signInWithGoogle,
-    logoutUser,
+    updateUserProfile,
     passwordReset,
+    loading,
+    logOut,
   };
 
   return (
