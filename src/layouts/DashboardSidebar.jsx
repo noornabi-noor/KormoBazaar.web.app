@@ -14,9 +14,6 @@ const DashboardSidebar = ({ role }) => {
               <Link to="/dashboard/manageUsers">Manage Users</Link>
             </li>
             <li>
-              <Link to="/dashboard/reviewWithdrawals">Review Withdrawals</Link>
-            </li>
-            <li>
               <Link to="/dashboard/manageTasks">Manage Tasks</Link>
             </li>
           </>

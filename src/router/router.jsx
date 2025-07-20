@@ -24,6 +24,7 @@ import AboutUs from "../pages/AboutUs/AboutUs";
 import AdminProtected from "../routes/AdminProtected";
 import ManageUsers from "../pages/Dashboard/ManageUsers/ManageUsers";
 import ManageTasks from "../pages/Dashboard/ManageTasks/ManageTasks";
+import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardRedirect /> }, 
 
       //Admin
+      { path: "adminHome", element: <AdminHome /> },
       { path: "/dashboard/manageUsers", element: <AdminProtected><ManageUsers /></AdminProtected> },
       { path: "manageTasks", element: <ManageTasks /> },
 

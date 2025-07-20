@@ -10,6 +10,7 @@ const DashboardRedirect = () => {
     if (!loading) {
       if (role === "buyer") navigate("/dashboard/buyerHome");
       else if (role === "worker") navigate("/dashboard/workerHome");
+      else if (role === "admin") navigate("/dashboard/adminHome");
     }
   }, [role, loading, navigate]);
 
