@@ -5,6 +5,7 @@ import LiveStats from '../LiveStats/LiveStats';
 import CommunitySection from '../CommunitySection/CommunitySection';
 import WeeklyPaymentSection from '../WeeklyPaymentSection/WeeklyPaymentSection';
 import TopWorkers from '../TopWorkers/TopWorkers';
+import TestimonialSection from '../TestimonialSection/TestimonialSection';
 
 const Home = () => {
     return (
@@ -14,6 +15,7 @@ const Home = () => {
             <CommunitySection/>
             <WeeklyPaymentSection/>
             <HowItWorks/>
+            <TestimonialSection/>
             <LiveStats/>
         </div>
     );
