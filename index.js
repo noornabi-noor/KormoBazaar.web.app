@@ -669,6 +669,30 @@ async function run() {
         }
     });
 
+    app.get("/admin/tasks", async (req, res) => {
+        try {
+            const tasks = await tasksCollection.find().sort({ createdAt: -1 }).toArray();
+            res.send(tasks);
+        } catch (err) {
+            console.error("Fetch tasks failed:", err);
+            res.status(500).send({ message: "Failed to load tasks" });
+        }
+    });
+
+    app.delete("/admin/tasks/:id", async (req, res) => {
+        const id = req.params.id;
+
+        try {
+            const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
+            res.send(result);
+        } catch (err) {
+            console.error("Task deletion failed:", err);
+            res.status(500).send({ message: "Failed to delete task" });
+        }
+    });
+
+    
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
