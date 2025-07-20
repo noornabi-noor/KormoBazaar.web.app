@@ -751,6 +751,23 @@ async function run() {
     });
 
 
+    //top workers
+    app.get("/top-workers", async (req, res) => {
+        try {
+            const topWorkers = await usersCollection
+            .find({ role: "worker" })
+            .sort({ coins: -1 })
+            .limit(6)
+            .project({ name: 1, email: 1, photoURL: 1, coins: 1 }) // select only needed fields
+            .toArray();
+
+            res.send(topWorkers);
+        } catch (err) {
+            console.error("Top workers fetch error:", err);
+            res.status(500).send({ message: "Failed to load top workers" });
+        }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (err) {
