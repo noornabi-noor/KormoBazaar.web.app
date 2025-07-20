@@ -327,6 +327,105 @@ async function run() {
     });
 
 
+
+
+    app.get("/buyer/stats", async (req, res) => {
+        const email = req.query.email;
+        try {
+            const tasks = await tasksCollection.find({ buyer_email: email }).toArray();
+
+            const totalTasks = tasks.length;
+            const pendingWorkers = tasks.reduce(
+            (sum, task) => sum + Number(task.required_workers || 0),
+            0
+            );
+
+            const payments = await paymentCollection.find({ email }).toArray();
+            const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+            res.send({ totalTasks, pendingWorkers, totalPaid });
+        } catch (err) {
+            console.error("Stats error:", err);
+            res.status(500).send({ message: "Failed to fetch buyer stats" });
+        }
+    });
+
+    app.get("/buyer/pendingSubmissions", async (req, res) => {
+        const email = req.query.email;
+        try {
+            const buyerTasks = await tasksCollection
+            .find({ buyer_email: email })
+            .project({ _id: 1, task_title: 1 })
+            .toArray();
+
+            const taskIds = buyerTasks.map((t) => t._id.toString());
+
+            const submissions = await submissionsCollection
+            .find({ task_id: { $in: taskIds }, status: "pending" })
+            .toArray();
+
+            const enriched = submissions.map((s) => {
+            const task = buyerTasks.find((t) => t._id.toString() === s.task_id);
+            return {
+                ...s,
+                task_title: task?.task_title || "Untitled",
+            };
+            });
+
+            res.send(enriched);
+        } catch (error) {
+            console.error("Pending submissions error:", error);
+            res.status(500).send({ message: "Failed to load submissions" });
+        }
+    });
+
+
+    app.patch("/buyer/approveSubmission/:id", async (req, res) => {
+        const submissionId = req.params.id;
+        const { workerEmail, coins } = req.body;
+
+        try {
+            await submissionsCollection.updateOne(
+            { _id: new ObjectId(submissionId) },
+            { $set: { status: "approved" } }
+            );
+
+            await usersCollection.updateOne(
+            { email: workerEmail },
+            { $inc: { coins: coins } }
+            );
+
+            res.send({ success: true });
+        } catch (err) {
+            console.error("Approval error:", err);
+            res.status(500).send({ success: false });
+        }
+    });
+
+
+    app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
+        const submissionId = req.params.id;
+        const { taskId } = req.body;
+
+        try {
+            await submissionsCollection.updateOne(
+            { _id: new ObjectId(submissionId) },
+            { $set: { status: "rejected" } }
+            );
+
+            await tasksCollection.updateOne(
+            { _id: new ObjectId(taskId) },
+            { $inc: { required_workers: 1 } }
+            );
+
+            res.send({ success: true });
+        } catch (err) {
+            console.error("Reject error:", err);
+            res.status(500).send({ success: false });
+        }
+    });
+
+
      // ==============================
     // ➕ Worker part
     // ==============================
@@ -396,7 +495,6 @@ async function run() {
         }
     });
 
-
     app.get('/my-submissions/:email', async (req, res) => {
         const { email } = req.params;
         try {
@@ -409,6 +507,48 @@ async function run() {
         } catch (error) {
             console.error("My submissions fetch error:", error);
             res.status(500).json({ message: "Failed to fetch submissions" });
+        }
+    });
+
+    app.get("/worker/stats", async (req, res) => {
+        const email = req.query.email;
+        try {
+            const all = await submissionsCollection.find({ worker_email: email }).toArray();
+
+            const totalSubmissions = all.length;
+            const pendingCount = all.filter((s) => s.status === "pending").length;
+            const totalEarnings = all
+            .filter((s) => s.status === "approved")
+            .reduce((sum, s) => sum + Number(s.payable_amount || 0), 0);
+
+            res.send({ totalSubmissions, pendingCount, totalEarnings });
+        } catch (err) {
+            console.error("Worker stats error:", err);
+            res.status(500).send({ message: "Stats fetch failed" });
+        }
+    });
+
+    app.get("/worker/approvedSubmissions", async (req, res) => {
+        const email = req.query.email;
+        try {
+            const subs = await submissionsCollection
+            .find({ worker_email: email, status: "approved" })
+            .toArray();
+
+            const enriched = await Promise.all(
+            subs.map(async (sub) => {
+                const task = await tasksCollection.findOne({ _id: new ObjectId(sub.task_id) });
+                return {
+                ...sub,
+                task_title: task?.task_title || "Untitled",
+                buyer_name: task?.buyer_name || "Unknown",
+                };
+            })
+            );
+            res.send(enriched);
+        } catch (err) {
+            console.error("Approved submissions error:", err);
+            res.status(500).send({ message: "Failed to fetch approved submissions" });
         }
     });
 
