@@ -19,6 +19,10 @@ import BuyerHome from "../pages/Buyer/BuyerHome/BuyerHome";
 import WorkerHome from "../pages/Worker/WorkerHome/WorkerHome";
 import DashboardRedirect from "../pages/Dashboard/DashboardRedirect";
 import UnifiedDashboard from "../pages/Dashboard/UnifiedDashboard";
+import WithdrawForm from "../pages/WithdrawForm/WithdrawForm";
+import AboutUs from "../pages/AboutUs/AboutUs";
+import AdminProtected from "../routes/AdminProtected";
+import ManageUsers from "../pages/Dashboard/ManageUsers/ManageUsers";
 
 export const router = createBrowserRouter([
   {
@@ -33,10 +37,14 @@ export const router = createBrowserRouter([
         path: "myProfile",
         Component: MyProfile,
       },
-
+      { path: "task/:id", Component: TaskDetails },
       {
         path: "/payment",
         Component: Payment,
+      },
+      {
+        path: "about",
+        Component: AboutUs,
       },
     ],
   },
@@ -54,42 +62,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  // {
-  //   path: "/dashboard",
-  //   element: (
-  //     <PrivateRoutes>
-  //        <DashboardWrapper />
-  //     </PrivateRoutes>
-  //   ),
-  //   children: [
-  //     { index: true, Component: BuyerHome },
-
-  //     // Buyer
-  //     {
-  //       path: "addTasks",
-  //       Component: AddTasks,
-  //     },
-  //     {
-  //       path: "myTasks",
-  //       Component: MyTasks,
-  //     },
-  //     {
-  //       path: "paymentHistory",
-  //       Component: PaymentHistory,
-  //     },
-  //     {
-  //       path: "purchaseCoins",
-  //       Component: PurchaseCoins,
-  //     },
-
-  //     // Worker
-  //     { path: "taskList", Component: TaskList },
-  //     { path: "mySubmission", Component: MySubmissions },
-  //     { path: "task/:id", Component: TaskDetails },
-
-  //     // Admin
-  //   ],
-  // },
   {
     path: "/dashboard",
     element: (
@@ -98,7 +70,8 @@ export const router = createBrowserRouter([
       </PrivateRoutes>
     ),
     children: [
-      { index: true, element: <DashboardRedirect /> }, // 
+      { index: true, element: <DashboardRedirect /> }, 
+      { path: "/dashboard/manageUsers", element: <AdminProtected><ManageUsers /></AdminProtected> },
 
       // Buyer
       { path: "buyerHome", element: <BuyerHome /> },
@@ -111,6 +84,7 @@ export const router = createBrowserRouter([
       { path: "workerHome", element: <WorkerHome /> },
       { path: "taskList", element: <TaskList /> },
       { path: "mySubmission", element: <MySubmissions /> },
+      { path: "withdraw", element: <WithdrawForm /> },
     ],
   },
 ]);
