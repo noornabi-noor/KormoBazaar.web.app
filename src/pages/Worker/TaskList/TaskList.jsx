@@ -22,7 +22,7 @@ const TaskList = () => {
           <p><strong>Payable:</strong> ${task.payable_amount}</p>
           <p><strong>Workers Needed:</strong> {task.required_workers}</p>
           <button
-            onClick={() => navigate(`/task/${task._id}`)}
+            onClick={() => navigate(`/dashboard/task/${task._id}`)}
             className="btn btn-primary mt-2"
           >
             View Details

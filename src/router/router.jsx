@@ -14,9 +14,11 @@ import Payment from "../pages/Worker/Payment/Payment";
 import PurchaseCoins from "../pages/Worker/PurchaseCoins/PurchaseCoins";
 import PrivateRoutes from "../routes/PrivateRoutes";
 import PaymentHistory from "../pages/Buyer/PaymentHistory/PaymentHistory";
-import DashboardSidebar from "../layouts/DashboardSidebar";
 import DashboardWrapper from "../pages/Dashboard/DashboardWrapper";
 import BuyerHome from "../pages/Buyer/BuyerHome/BuyerHome";
+import WorkerHome from "../pages/Worker/WorkerHome/WorkerHome";
+import DashboardRedirect from "../pages/Dashboard/DashboardRedirect";
+import UnifiedDashboard from "../pages/Dashboard/UnifiedDashboard";
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +33,7 @@ export const router = createBrowserRouter([
         path: "myProfile",
         Component: MyProfile,
       },
-      { path: "task/:id", Component: TaskDetails },
+
       {
         path: "/payment",
         Component: Payment,
@@ -52,39 +54,63 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  // {
+  //   path: "/dashboard",
+  //   element: (
+  //     <PrivateRoutes>
+  //        <DashboardWrapper />
+  //     </PrivateRoutes>
+  //   ),
+  //   children: [
+  //     { index: true, Component: BuyerHome },
+
+  //     // Buyer
+  //     {
+  //       path: "addTasks",
+  //       Component: AddTasks,
+  //     },
+  //     {
+  //       path: "myTasks",
+  //       Component: MyTasks,
+  //     },
+  //     {
+  //       path: "paymentHistory",
+  //       Component: PaymentHistory,
+  //     },
+  //     {
+  //       path: "purchaseCoins",
+  //       Component: PurchaseCoins,
+  //     },
+
+  //     // Worker
+  //     { path: "taskList", Component: TaskList },
+  //     { path: "mySubmission", Component: MySubmissions },
+  //     { path: "task/:id", Component: TaskDetails },
+
+  //     // Admin
+  //   ],
+  // },
   {
     path: "/dashboard",
     element: (
       <PrivateRoutes>
-         <DashboardWrapper />
+        <UnifiedDashboard />
       </PrivateRoutes>
     ),
     children: [
-      { index: true, Component: BuyerHome },
-      
+      { index: true, element: <DashboardRedirect /> }, // 
+
       // Buyer
-      {
-        path: "addTasks",
-        Component: AddTasks,
-      },
-      {
-        path: "myTasks",
-        Component: MyTasks,
-      },
-      {
-        path: "paymentHistory",
-        Component: PaymentHistory,
-      },
-      {
-        path: "purchaseCoins",
-        Component: PurchaseCoins,
-      },
+      { path: "buyerHome", element: <BuyerHome /> },
+      { path: "addTasks", element: <AddTasks /> },
+      { path: "myTasks", element: <MyTasks /> },
+      { path: "paymentHistory", element: <PaymentHistory /> },
+      { path: "purchaseCoins", element: <PurchaseCoins /> },
 
       // Worker
-      { path: "taskList", Component: TaskList },
-      { path: "mySubmission", Component: MySubmissions },
-
-      // Admin
+      { path: "workerHome", element: <WorkerHome /> },
+      { path: "taskList", element: <TaskList /> },
+      { path: "mySubmission", element: <MySubmissions /> },
     ],
   },
 ]);
