@@ -42,6 +42,11 @@ async function run() {
     const submissionsCollection = db.collection("submissions");
     const paymentCollection = db.collection("payments");
 
+    app.get('/users/role/:email', async (req, res) => {
+        const email = req.params.email;
+        const user = await usersCollection.findOne({ email });
+        res.send({ role: user?.role });
+    });
 
 
     //users API
@@ -243,27 +248,27 @@ async function run() {
         }
     });
 
+    // GET: Get payment history by user email
+    app.get('/payments', async (req, res) => {
+        try {
+            const userEmail = req.query.email;
 
-        //get payment
-    app.get('/payments', async(req,res) =>{
-      try{
-        const userEmail = req.query.email;
+            // if (req.decoded.email !== userEmail) {
+            // return res.status(403).send({ message: 'Forbidden access' });
+            // }
 
-        if(req.decoded.email !== userEmail){
-          return res.status(403).send({message: 'forbiddedn access'});
+            const query = { email: userEmail };
+            const options = { sort: { paid_at: -1 } };
+
+            const payments = await paymentCollection.find(query, options).toArray();
+
+            res.send(payments);
+        } catch (error) {
+            console.error('Error fetching payment history:', error);
+            res.status(500).send({ message: 'Failed to get payments' });
         }
-
-        const query = userEmail?{email:userEmail}:{};
-        const options = {sort: {paid_at:-1}};
-
-        const payments = await paymentCollection.find(query,options).
-        toArray();
-        res.send(payments);
-      }catch(error){
-        console.log('Error fetching payment history: ', error);
-        res.status(500).send({ message: 'Failed to get payments' });
-      }
     });
+
 
 
     //POST: Record payment and update parcel status
