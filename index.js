@@ -691,7 +691,64 @@ async function run() {
         }
     });
 
-    
+    app.get("/admin/stats", async (req, res) => {
+        try {
+            const buyers = await usersCollection.countDocuments({ role: "buyer" });
+            const workers = await usersCollection.countDocuments({ role: "worker" });
+
+            const users = await usersCollection.find().toArray();
+            const totalCoins = users.reduce((sum, user) => sum + (user.coins || 0), 0);
+
+            const payments = await paymentCollection.find().toArray(); // assuming this exists
+            const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+            res.send({
+            totalBuyers: buyers,
+            totalWorkers: workers,
+            totalCoins,
+            totalPayments,
+            });
+        } catch (err) {
+            res.status(500).send({ message: "Stats load failed" });
+        }
+    });
+
+    app.get("/admin/pendingWithdrawals", async (req, res) => {
+        try {
+            const pending = await withdrawalCollection
+            .find({ status: "pending" })
+            .sort({ withdraw_date: -1 })
+            .toArray();
+
+            res.send(pending);
+        } catch (err) {
+            res.status(500).send({ message: "Withdrawal fetch failed" });
+        }
+    });
+
+    app.patch("/admin/approveWithdrawal/:id", async (req, res) => {
+        const id = req.params.id;
+        const { email, coins } = req.body;
+
+        try {
+            // Update withdrawal status
+            const withdrawalUpdate = await withdrawalCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: "approved" } }
+            );
+
+            // Decrease worker's coin balance
+            const coinUpdate = await usersCollection.updateOne(
+            { email },
+            { $inc: { coins: -coins } }
+            );
+
+            res.send({ success: true });
+        } catch (err) {
+            console.error("Approval failed:", err);
+            res.status(500).send({ success: false, message: "Approval failed" });
+        }
+    });
 
 
     await client.db("admin").command({ ping: 1 });
