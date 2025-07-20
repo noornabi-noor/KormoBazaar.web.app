@@ -12,7 +12,10 @@ import TaskDetails from "../pages/Worker/TaskDetails/TaskDetails";
 import MySubmissions from "../pages/Worker/MySubmissions/MySubmissions";
 import Payment from "../pages/Worker/Payment/Payment";
 import PurchaseCoins from "../pages/Worker/PurchaseCoins/PurchaseCoins";
+import PrivateRoutes from "../routes/PrivateRoutes";
 import PaymentHistory from "../pages/Buyer/PaymentHistory/PaymentHistory";
+import DashboardSidebar from "../layouts/DashboardSidebar";
+import DashboardWrapper from "../pages/Dashboard/DashboardWrapper";
 
 export const router = createBrowserRouter([
   {
@@ -27,31 +30,10 @@ export const router = createBrowserRouter([
         path: "myProfile",
         Component: MyProfile,
       },
-      {
-        path: "addTasks",
-        Component: AddTasks,
-      },
-      {
-        path: "myTasks",
-        Component: MyTasks,
-      },
-      {
-        path: "taskList",
-        Component: TaskList,
-      },
       { path: "task/:id", Component: TaskDetails },
-      { path: "mySubmission", Component: MySubmissions },
-      {
-        path: "/purchaseCoins",
-        Component: PurchaseCoins,
-      },
       {
         path: "/payment",
         Component: Payment,
-      },
-      {
-        path: "paymentHistory",
-        Component: PaymentHistory,
       },
     ],
   },
@@ -67,6 +49,39 @@ export const router = createBrowserRouter([
         path: "register",
         Component: Register,
       },
+    ],
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoutes>
+         <DashboardWrapper />
+      </PrivateRoutes>
+    ),
+    children: [
+      // Buyer
+      {
+        path: "addTasks",
+        Component: AddTasks,
+      },
+      {
+        path: "myTasks",
+        Component: MyTasks,
+      },
+      {
+        path: "paymentHistory",
+        Component: PaymentHistory,
+      },
+      {
+        path: "purchaseCoins",
+        Component: PurchaseCoins,
+      },
+
+      // Worker
+      { path: "taskList", Component: TaskList },
+      { path: "mySubmission", Component: MySubmissions },
+
+      // Admin
     ],
   },
 ]);
