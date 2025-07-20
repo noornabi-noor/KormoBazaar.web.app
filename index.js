@@ -41,6 +41,7 @@ async function run() {
     const tasksCollection = db.collection("tasks");
     const submissionsCollection = db.collection("submissions");
     const paymentCollection = db.collection("payments");
+    const withdrawalCollection = db.collection("withdrawals");
 
     app.get('/users/role/:email', async (req, res) => {
         const email = req.params.email;
@@ -551,6 +552,123 @@ async function run() {
             res.status(500).send({ message: "Failed to fetch approved submissions" });
         }
     });
+
+    //withdrawals tk for worker part
+
+    app.get("/withdrawals", async (req, res) => {
+        const email = req.query.email;
+        try {
+            const history = await withdrawalCollection
+            .find({ worker_email: email })
+            .sort({ withdraw_date: -1 })
+            .toArray();
+            res.send(history);
+        } catch (error) {
+            console.error("Fetch withdrawals error:", error);
+            res.status(500).send({ message: "Failed to get withdrawals" });
+        }
+    });
+
+    app.post("/withdrawals", async (req, res) => {
+        try {
+            const {
+            worker_email,
+            worker_name,
+            withdrawal_coin,
+            withdrawal_amount,
+            payment_system,
+            account_number,
+            status,
+            withdraw_date,
+            } = req.body;
+
+            if (typeof withdrawal_coin !== "number" || withdrawal_coin < 200 || withdrawal_coin % 20 !== 0) {
+            return res.status(400).json({ message: "Minimum 200 coins required. Withdrawal must be divisible by 20." });
+            }
+
+            const worker = await usersCollection.findOne({ email: worker_email });
+            if (!worker || worker.coins < withdrawal_coin) {
+            return res.status(400).json({ message: "Insufficient coins" });
+            }
+
+            await usersCollection.updateOne(
+            { email: worker_email },
+            { $inc: { coins: -withdrawal_coin } }
+            );
+
+            const doc = {
+            worker_email,
+            worker_name,
+            withdrawal_coin,
+            withdrawal_amount,
+            payment_system,
+            account_number,
+            status: status || "pending",
+            withdraw_date: withdraw_date || new Date(),
+            };
+
+            await withdrawalCollection.insertOne(doc);
+            res.status(201).json({ success: true, message: "Withdrawal submitted" });
+        } catch (error) {
+            console.error("Withdrawal error:", error);
+            res.status(500).json({ success: false, message: "Server error" });
+        }
+    });
+
+    //admin role play
+    app.get("/admin/searchUsers", async (req, res) => {
+        const query = req.query.query || "";
+
+        try {
+            const searchRegex = new RegExp(query, "i"); // case-insensitive match
+
+            const users = await usersCollection
+            .find({
+                $or: [
+                { name: searchRegex },
+                { email: searchRegex }
+                ]
+            })
+            .limit(10)
+            .toArray();
+
+            res.send(users);
+        } catch (err) {
+            console.error("User search failed:", err);
+            res.status(500).send({ message: "Failed to fetch users" });
+        }
+    });
+
+    app.patch("/admin/updateUserRole/:email", async (req, res) => {
+        const email = req.params.email;
+        const newRole = req.body.role;
+
+        try {
+            const user = await usersCollection.findOne({ email });
+
+            if (!user) return res.status(404).send({ success: false, message: "User not found" });
+
+            let updateDoc = {};
+
+            if (newRole === "admin") {
+            updateDoc = {
+                $set: { role: "admin", previousRole: user.role } // store old role
+            };
+            } else {
+            updateDoc = {
+                $set: { role: user.previousRole || "worker" }, // fallback to worker
+                $unset: { previousRole: "" } // cleanup
+            };
+            }
+
+            const result = await usersCollection.updateOne({ email }, updateDoc);
+            res.send({ success: true, modifiedCount: result.modifiedCount });
+        } catch (err) {
+            console.error("Role update failed:", err);
+            res.status(500).send({ success: false, message: "Server error" });
+        }
+    });
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
