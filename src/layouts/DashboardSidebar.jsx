@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'; // ✅ make sure it's 'react-router-dom'
+import { Link, Outlet } from 'react-router'; 
 
 const DashboardSidebar = ({ role }) => {
   return (
@@ -9,6 +9,7 @@ const DashboardSidebar = ({ role }) => {
         <ul className="space-y-2">
           {role === 'buyer' && (
             <>
+            <li><Link to="/dashboard">Dashboard Home</Link></li>
               <li><Link to="/dashboard/myTasks">My Tasks</Link></li>
               <li><Link to="/dashboard/addTasks">Add Tasks</Link></li>
               <li><Link to="/dashboard/purchaseCoins">Purchase Coins</Link></li>

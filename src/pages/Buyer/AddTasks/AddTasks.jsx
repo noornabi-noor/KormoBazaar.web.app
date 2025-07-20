@@ -72,8 +72,8 @@ const AddTasks = () => {
       if (taskData.success) {
         toast.success("✅ Task added successfully!");
         setTimeout(() => {
-          navigate("/"); // or "/dashboard/buyer"
-        }, 1500); // delay for 1.5 seconds
+          navigate("/dashboard"); 
+        }, 1500); 
       } else {
         toast.error("❌ " + taskData.message || "Failed to add task");
       }

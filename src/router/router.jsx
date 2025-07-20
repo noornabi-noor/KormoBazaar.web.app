@@ -16,6 +16,7 @@ import PrivateRoutes from "../routes/PrivateRoutes";
 import PaymentHistory from "../pages/Buyer/PaymentHistory/PaymentHistory";
 import DashboardSidebar from "../layouts/DashboardSidebar";
 import DashboardWrapper from "../pages/Dashboard/DashboardWrapper";
+import BuyerHome from "../pages/Buyer/BuyerHome/BuyerHome";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,8 @@ export const router = createBrowserRouter([
       </PrivateRoutes>
     ),
     children: [
+      { index: true, Component: BuyerHome },
+      
       // Buyer
       {
         path: "addTasks",
