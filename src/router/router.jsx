@@ -23,6 +23,7 @@ import WithdrawForm from "../pages/WithdrawForm/WithdrawForm";
 import AboutUs from "../pages/AboutUs/AboutUs";
 import AdminProtected from "../routes/AdminProtected";
 import ManageUsers from "../pages/Dashboard/ManageUsers/ManageUsers";
+import ManageTasks from "../pages/Dashboard/ManageTasks/ManageTasks";
 
 export const router = createBrowserRouter([
   {
@@ -71,7 +72,10 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardRedirect /> }, 
+
+      //Admin
       { path: "/dashboard/manageUsers", element: <AdminProtected><ManageUsers /></AdminProtected> },
+      { path: "manageTasks", element: <ManageTasks /> },
 
       // Buyer
       { path: "buyerHome", element: <BuyerHome /> },

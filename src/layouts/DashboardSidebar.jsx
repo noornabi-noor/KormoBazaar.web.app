@@ -16,6 +16,9 @@ const DashboardSidebar = ({ role }) => {
             <li>
               <Link to="/dashboard/reviewWithdrawals">Review Withdrawals</Link>
             </li>
+            <li>
+              <Link to="/dashboard/manageTasks">Manage Tasks</Link>
+            </li>
           </>
         )}
         {role === "buyer" && (
