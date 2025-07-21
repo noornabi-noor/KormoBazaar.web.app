@@ -39,9 +39,11 @@ const testimonials = [
 
 const TestimonialSection = () => {
   return (
-    <section className="py-20 bg-blue-50 mt-12 rounded-2xl">
+    <section className="py-20 bg-blue-50 dark:bg-gray-900 mt-12 rounded-2xl transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">💬 What Our Users Say</h2>
+        <h2 className="text-3xl font-bold text-center mb-6 text-blue-700 dark:text-blue-300">
+          💬 What Our Users Say
+        </h2>
 
         <Swiper
           slidesPerView={1}
@@ -56,14 +58,18 @@ const TestimonialSection = () => {
         >
           {testimonials.map((t, index) => (
             <SwiperSlide key={index}>
-              <div className="bg-white rounded-lg shadow-lg p-6 text-center h-full flex flex-col justify-between">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center h-full flex flex-col justify-between border border-gray-200 dark:border-gray-700 transition-all duration-300">
                 <img
                   src={t.photo}
                   alt={t.name}
-                  className="w-30 h-30 mx-auto rounded-full mb-4 object-cover"
+                  className="w-24 h-24 mx-auto rounded-full mb-4 object-cover border-2 border-blue-300 dark:border-blue-600 shadow-sm"
                 />
-                <h3 className="text-xl font-semibold text-gray-800">{t.name}</h3>
-                <p className="text-gray-600 italic mt-2">“{t.quote}”</p>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  {t.name}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 italic mt-2">
+                  “{t.quote}”
+                </p>
               </div>
             </SwiperSlide>
           ))}
