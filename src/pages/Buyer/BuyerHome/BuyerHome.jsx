@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import UseAuth from "../../../hooks/UseAuth";
@@ -14,13 +13,11 @@ const BuyerHome = () => {
 
   useEffect(() => {
     if (user?.email) {
-      // ✅ Fetch stats
       axiosSecure
         .get(`/buyer/stats?email=${user.email}`)
         .then((res) => setStats(res.data))
         .catch(() => toast.error("❌ Failed to load stats"));
 
-      // ✅ Fetch pending submissions
       axiosSecure
         .get(`/buyer/pendingSubmissions?email=${user.email}`)
         .then((res) => setPendingSubmissions(res.data))
@@ -34,64 +31,58 @@ const BuyerHome = () => {
         workerEmail,
         coins: payable,
       });
-
       toast.success("✅ Approved!");
-      // Refresh list
       setPendingSubmissions((prev) => prev.filter((s) => s._id !== submissionId));
-    } catch (err) {
+    } catch {
       toast.error("❌ Failed to approve submission");
     }
   };
 
   const handleReject = async (submissionId, taskId) => {
     try {
-      await axiosSecure.patch(`/buyer/rejectSubmission/${submissionId}`, {
-        taskId,
-      });
-
+      await axiosSecure.patch(`/buyer/rejectSubmission/${submissionId}`, { taskId });
       toast.success("🚫 Rejected");
-      // Refresh list
       setPendingSubmissions((prev) => prev.filter((s) => s._id !== submissionId));
-    } catch (err) {
+    } catch {
       toast.error("❌ Failed to reject submission");
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card bg-blue-100 p-4 rounded shadow">
-          <h3 className="font-semibold text-lg">📝 Total Tasks</h3>
-          <p className="text-2xl mt-2">{stats.totalTasks}</p>
-        </div>
-        <div className="card bg-yellow-100 p-4 rounded shadow">
-          <h3 className="font-semibold text-lg">👥 Pending Workers</h3>
-          <p className="text-2xl mt-2">{stats.pendingWorkers}</p>
-        </div>
-        <div className="card bg-green-100 p-4 rounded shadow">
-          <h3 className="font-semibold text-lg">💰 Total Paid</h3>
-          <p className="text-2xl mt-2">${stats.totalPaid}</p>
-        </div>
+    <div className="max-w-6xl mx-auto px-6 py-10 space-y-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">👨‍💼 Buyer Dashboard</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Your task overview and submissions to review</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <StatCard label="📝 Total Tasks" value={stats.totalTasks} color="blue" />
+        <StatCard label="👥 Pending Workers" value={stats.pendingWorkers} color="yellow" />
+        <StatCard label="💰 Total Paid" value={`$${stats.totalPaid}`} color="green" />
       </div>
 
       {/* Pending Submissions */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">🕵️‍♂️ Tasks to Review</h2>
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow transition-all border border-gray-200 dark:border-gray-700">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 text-center">
+          🕵️‍♂️ Tasks to Review
+        </h3>
+
         {pendingSubmissions.length ? (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
+          <div className="overflow-x-auto rounded-lg">
+            <table className="table w-full text-sm">
+              <thead className="bg-blue-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                 <tr>
                   <th>Worker Name</th>
                   <th>Task Title</th>
-                  <th>Payable Amount</th>
+                  <th>Payable</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-700 dark:text-gray-100">
                 {pendingSubmissions.map((submission) => (
-                  <tr key={submission._id}>
+                  <tr key={submission._id} className="hover:bg-sky-50 dark:hover:bg-gray-800">
                     <td>{submission.worker_name}</td>
                     <td>{submission.task_title}</td>
                     <td>{submission.payable_amount} coins</td>
@@ -116,9 +107,7 @@ const BuyerHome = () => {
                       </button>
                       <button
                         className="btn btn-sm btn-error"
-                        onClick={() =>
-                          handleReject(submission._id, submission.task_id)
-                        }
+                        onClick={() => handleReject(submission._id, submission.task_id)}
                       >
                         Reject
                       </button>
@@ -129,35 +118,48 @@ const BuyerHome = () => {
             </table>
           </div>
         ) : (
-          <p>No submissions awaiting review.</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">No submissions awaiting review.</p>
         )}
       </div>
 
       {/* Modal */}
       {viewSubmission && (
         <dialog open className="modal modal-bottom sm:modal-middle">
-          <form method="dialog" className="modal-box">
-            <h3 className="font-bold text-lg mb-2">Submission Detail</h3>
-            <p>
-              <strong>Worker:</strong> {viewSubmission.worker_name}
-            </p>
-            <p>
-              <strong>Task:</strong> {viewSubmission.task_title}
-            </p>
-            <p>
-              <strong>Submitted Info:</strong> {viewSubmission.submission_detail}
-            </p>
+          <form method="dialog" className="modal-box bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+            <h3 className="font-bold text-lg mb-2">📄 Submission Detail</h3>
+            <p><strong>Worker:</strong> {viewSubmission.worker_name}</p>
+            <p><strong>Task:</strong> {viewSubmission.task_title}</p>
+            <p><strong>Details:</strong> {viewSubmission.submission_detail}</p>
             <div className="modal-action">
-              <button
-                className="btn btn-outline"
-                onClick={() => setViewSubmission(null)}
-              >
+              <button className="btn btn-outline" onClick={() => setViewSubmission(null)}>
                 Close
               </button>
             </div>
           </form>
         </dialog>
       )}
+    </div>
+  );
+};
+
+/* 🔧 Stat Card Component */
+const StatCard = ({ label, value, color }) => {
+  const bg = {
+    blue: "bg-blue-100 dark:bg-blue-900",
+    yellow: "bg-yellow-100 dark:bg-yellow-900",
+    green: "bg-green-100 dark:bg-green-900",
+  };
+
+  const text = {
+    blue: "text-blue-800 dark:text-blue-300",
+    yellow: "text-yellow-800 dark:text-yellow-300",
+    green: "text-green-800 dark:text-green-300",
+  };
+
+  return (
+    <div className={`rounded-xl p-4 shadow text-center ${bg[color]}`}>
+      <p className={`text-md mb-1 font-medium ${text[color]}`}>{label}</p>
+      <h3 className={`text-3xl font-bold ${text[color]}`}>{value}</h3>
     </div>
   );
 };
