@@ -1,28 +1,18 @@
-/* @import "tailwindcss";
-@plugin "daisyui";
-
-
-:root {
-  --color-primary: #0D47A1;
-  --color-secondary: #FF9800;
-}
-
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: base-200;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-} */
-
-/* index.css */
-
 @import "tailwindcss";
 @plugin "daisyui";
 
 @tailwind utilities;
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@layer base {
+  html {
+    @apply transition-colors duration-300;
+  }
+  body {
+    @apply bg-[#F9FAFB] text-blue-800 font-sans dark:bg-gray-900 dark:text-gray-100;
+  }
+}
 
 :root {
   --color-primary: #4f46e5; /* Indigo-600 */
@@ -30,13 +20,6 @@
   --color-secondary: #10b981; /* Emerald-500 */
   --bg-color: #f9fafb; /* light gray bg */
 }
-
-@layer base {
-  body {
-    @apply bg-[#F9FAFB] text-gray-800 font-sans;
-  }
-}
-
 
 @layer components {
   /* Reusable gradient text class */
@@ -54,24 +37,13 @@
     }
   }
 
-  /* @layer components {
-    .btn-secondary {
-      @apply btn btn-md rounded-full text-white font-semibold shadow-lg
-           bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-600
-           hover:scale-105 hover:from-emerald-400 hover:to-emerald-500
-           transition-all duration-300 border border-emerald-200/10;
-    }
-  } */
-
-
   @layer components {
-  .btn-secondary {
-    @apply btn rounded-full text-white font-bold px-6 py-2
+    .btn-secondary {
+      @apply btn rounded-full text-white font-bold px-6 py-2
            bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500
            hover:from-sky-400 hover:to-indigo-600 transition-all duration-300;
+    }
   }
-}
-
 
   /* Container section background */
   .section-bg {
@@ -80,6 +52,10 @@
 
   .navbar {
     @apply sticky top-0 z-50 bg-white shadow-md px-4 py-2 border-b border-gray-200;
+  }
+
+  .navbar-theme {
+    @apply bg-gradient-to-tr from-indigo-50 via-blue-100 to-sky-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 shadow-md rounded-xl;
   }
 
   /* Table header and body cells */

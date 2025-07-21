@@ -13,7 +13,7 @@ const TopWorkers = () => {
   }, [axiosSecure]);
 
   return (
-    <section className="py-12 bg-gray-50 mt-12 rounded-2xl">
+    <section className="py-12 bg-gradient-to-r from-purple-100 to-blue-100 mt-12 rounded-2xl">
       <div className="max-w-6xl mx-auto px-4">
         <h2 className="text-2xl font-bold text-center mb-6">🏆 Top Workers</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

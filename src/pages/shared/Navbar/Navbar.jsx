@@ -141,14 +141,16 @@
 
 // export default Navbar;
 
-import React, { use } from "react";
+import React, { use, useContext } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
+import { ThemeContext } from "../../../contexts/ThemeContext/ThemeContext";
 
 const Navbar = () => {
   const { user, logOut } = use(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -181,7 +183,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="navbar bg-gradient-to-tr from-indigo-50 via-blue-100 to-sky-50 shadow-md rounded-xl">
+    <div className="navbar navbar-theme ">
       <div className="navbar-start">
         <div className="dropdown">
           <button tabIndex={0} className="btn btn-ghost lg:hidden">
@@ -251,6 +253,17 @@ const Navbar = () => {
             )}
           </>
         )}
+        <button
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          className="p-2 md:p-3 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-600 transition-colors"
+        >
+          {theme === "dark" ? (
+            <span className="text-yellow-300 text-lg md:text-xl">☀️</span>
+          ) : (
+            <span className="text-gray-700 text-lg md:text-xl">🌙</span>
+          )}
+        </button>
       </div>
     </div>
   );
