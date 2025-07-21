@@ -19,7 +19,6 @@ const WithdrawForm = () => {
   const COIN_TO_DOLLAR = 20;
 
   useEffect(() => {
-    // Fetch current user coin balance
     if (user?.email) {
       axiosSecure
         .get(`/user/${user.email}`)
@@ -36,12 +35,12 @@ const WithdrawForm = () => {
     e.preventDefault();
 
     if (coinToWithdraw < MIN_WITHDRAW_COIN) {
-      toast.error("⚠️ Must withdraw at least 200 coins");
+      toast.error("⚠️ Minimum withdrawal is 200 coins");
       return;
     }
 
     if (coinToWithdraw > coinBalance) {
-      toast.error("❌ Withdrawal amount exceeds your coin balance");
+      toast.error("❌ You don't have enough coins");
       return;
     }
 
@@ -55,7 +54,7 @@ const WithdrawForm = () => {
         worker_email: user.email,
         worker_name: user.displayName,
         withdrawal_coin: coinToWithdraw,
-        withdrawal_amount: coinToWithdraw / COIN_TO_DOLLAR,
+        withdrawal_amount: withdrawAmount,
         payment_system: paymentSystem,
         account_number: accountNumber,
         status: "pending",
@@ -67,77 +66,70 @@ const WithdrawForm = () => {
       Swal.fire({
         title: "Withdrawal Request Submitted ✅",
         html: `
-    <p><strong>Coins:</strong> ${coinToWithdraw}</p>
-    <p><strong>Amount:</strong> $${(coinToWithdraw / COIN_TO_DOLLAR).toFixed(
-      2
-    )}</p>
-    <p><strong>Payment Method:</strong> ${paymentSystem}</p>
-    <p><strong>Account:</strong> ${accountNumber}</p>
-    <p>Status: <strong>Pending</strong></p>
-  `,
+          <p><strong>Coins:</strong> ${coinToWithdraw}</p>
+          <p><strong>Amount:</strong> $${withdrawAmount.toFixed(2)}</p>
+          <p><strong>Payment Method:</strong> ${paymentSystem}</p>
+          <p><strong>Account:</strong> ${accountNumber}</p>
+          <p>Status: <strong>Pending</strong></p>
+        `,
         icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        navigate("/dashboard/workerHome"); 
-      });
+        confirmButtonText: "Back to Dashboard",
+      }).then(() => navigate("/dashboard/workerHome"));
 
       setCoinToWithdraw(0);
       setPaymentSystem("");
       setAccountNumber("");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "❌ Failed to submit withdrawal"
-      );
+      toast.error(err.response?.data?.message || "❌ Failed to submit withdrawal");
     }
   };
 
   const eligible = coinBalance >= MIN_WITHDRAW_COIN;
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">🪙 Withdraw Coins</h2>
-      <p className="mb-2">
-        Current Coin: <strong>{coinBalance}</strong>
-      </p>
-      <p className="mb-4">
-        Withdrawal Value:{" "}
-        <strong>${(coinBalance / COIN_TO_DOLLAR).toFixed(2)}</strong>
-      </p>
+    <div className="max-w-lg mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">🪙 <span className="text-2xl font-bold text-primary-gradient dark:text-blue-300 text-center">Withdraw Coins</span> </h2>
+
+      <div className="text-center text-gray-700 dark:text-gray-300">
+        <p>Current Balance: <strong>{coinBalance} coins</strong></p>
+        <p>Equivalent: <strong>${(coinBalance / COIN_TO_DOLLAR).toFixed(2)}</strong></p>
+      </div>
 
       {!eligible ? (
-        <p className="text-red-500">
-          ⚠️ Insufficient coin to withdraw (min 200 required)
+        <p className="text-center text-red-500 dark:text-red-400 font-medium">
+          ⚠️ You need at least {MIN_WITHDRAW_COIN} coins to request withdrawal.
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-gray-800 dark:text-gray-100">
           <div>
-            <label>Coins to Withdraw</label>
+            <label className="block mb-1">Coins to Withdraw</label>
             <input
               type="number"
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
               value={coinToWithdraw}
               onChange={(e) => setCoinToWithdraw(Number(e.target.value))}
               min={200}
               step={20}
               max={coinBalance}
               required
+              placeholder="e.g. 200, 300..."
             />
           </div>
 
           <div>
-            <label>Withdrawal Amount ($)</label>
+            <label className="block mb-1">Amount ($)</label>
             <input
               type="number"
-              className="input input-bordered w-full"
-              value={withdrawAmount}
               readOnly
+              className="input input-bordered w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+              value={withdrawAmount}
             />
           </div>
 
           <div>
-            <label>Payment System</label>
+            <label className="block mb-1">Payment System</label>
             <select
-              className="select select-bordered w-full"
+              className="select select-bordered w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
               value={paymentSystem}
               onChange={(e) => setPaymentSystem(e.target.value)}
               required
@@ -151,13 +143,14 @@ const WithdrawForm = () => {
           </div>
 
           <div>
-            <label>Account Number</label>
+            <label className="block mb-1">Account Number</label>
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
               required
+              placeholder="Enter your Bkash/Rocket/etc account"
             />
           </div>
 

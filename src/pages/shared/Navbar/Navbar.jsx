@@ -1,9 +1,10 @@
 import React, { use, useContext } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
 import { ThemeContext } from "../../../contexts/ThemeContext/ThemeContext";
+
 
 const Navbar = () => {
   const { user, logOut } = use(AuthContext);
@@ -15,7 +16,7 @@ const Navbar = () => {
     try {
       await logOut();
       toast.success("✅ Logged out successfully");
-      navigate("/login");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
     }
@@ -122,6 +123,7 @@ const Navbar = () => {
           )}
         </button>
       </div>
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

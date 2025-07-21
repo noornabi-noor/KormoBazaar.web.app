@@ -95,19 +95,6 @@ const Register = () => {
     }
   };
 
-  // const handleGoogleSignIn = () => {
-  //   signInWithGoogle()
-  //     .then((result) => {
-  //       toast.success(`✅ Signed in as ${result.user.displayName}`);
-  //       setTimeout(() => navigate("/"), 1000);
-  //       setError("");
-  //     })
-  //     .catch((error) => {
-  //       setError(error.message);
-  //       toast.error(`❌ ${error.message}`);
-  //     });
-  // };
-
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithGoogle();

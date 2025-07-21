@@ -17,47 +17,60 @@ const MySubmissions = () => {
   }, [user?.email]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">📬 My Submissions</h2>
-      <div className="overflow-x-auto">
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>Task Title</th>
-              <th>Buyer</th>
-              <th>Pay</th>
-              <th>Date</th>
-              <th>Submission</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.map((s) => (
-              <tr key={s._id}>
-                <td>{s.task_title}</td>
-                <td>{s.buyer_name} ({s.buyer_email})</td>
-                <td>${s.payable_amount}</td>
-                <td>{new Date(s.current_date).toLocaleDateString()}</td>
-                <td>{s.submission_details}</td>
-                <td>
-                  <span
-                    className={`badge ${
-                      s.status === "approved"
-                        ? "badge-success"
-                        : s.status === "rejected"
-                        ? "badge-error"
-                        : "badge-warning"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {submissions.length === 0 && <p>No submissions found.</p>}
+    <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">📬 My Submissions</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Track your submission status and details</p>
       </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        {submissions.length > 0 ? (
+          <table className="table w-full text-sm">
+            <thead className="bg-blue-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+              <tr>
+                <th>Task Title</th>
+                <th>Buyer</th>
+                <th>Pay</th>
+                <th>Date</th>
+                <th>Submission</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700 dark:text-gray-100">
+              {submissions.map((s) => (
+                <tr key={s._id} className="hover:bg-sky-50 dark:hover:bg-gray-800 transition">
+                  <td>{s.task_title}</td>
+                  <td>
+                    {s.buyer_name} <br />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{s.buyer_email}</span>
+                  </td>
+                  <td>${s.payable_amount}</td>
+                  <td>{new Date(s.current_date).toLocaleDateString()}</td>
+                  <td>{s.submission_details}</td>
+                  <td>
+                    <span
+                      className={`badge px-3 py-1 text-xs font-semibold ${
+                        s.status === "approved"
+                          ? "badge-success text-green-700 dark:text-green-300"
+                          : s.status === "rejected"
+                          ? "badge-error text-red-700 dark:text-red-300"
+                          : "badge-warning text-yellow-700 dark:text-yellow-300"
+                      }`}
+                    >
+                      {s.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-center text-gray-500 dark:text-gray-400">No submissions found.</p>
+        )}
+      </div>
+
       <ToastContainer position="top-center" />
     </div>
   );
