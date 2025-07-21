@@ -3,9 +3,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
-
-
-
 // Load environment variables
 dotenv.config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -42,6 +39,7 @@ async function run() {
     const submissionsCollection = db.collection("submissions");
     const paymentCollection = db.collection("payments");
     const withdrawalCollection = db.collection("withdrawals");
+    const notificationsCollection = db.collection("notifications");
 
     app.get('/users/role/:email', async (req, res) => {
         const email = req.params.email;
@@ -383,7 +381,7 @@ async function run() {
 
     app.patch("/buyer/approveSubmission/:id", async (req, res) => {
         const submissionId = req.params.id;
-        const { workerEmail, coins } = req.body;
+        const { workerEmail, coins, buyerName, taskTitle } = req.body;
 
         try {
             await submissionsCollection.updateOne(
@@ -396,6 +394,14 @@ async function run() {
             { $inc: { coins: coins } }
             );
 
+            // ✅ Add notification
+            await notificationsCollection.insertOne({
+            message: `You have earned ${coins} coins from ${buyerName} for completing "${taskTitle}"`,
+            toEmail: workerEmail,
+            actionRoute: "/dashboard/worker-home",
+            time: new Date()
+            });
+
             res.send({ success: true });
         } catch (err) {
             console.error("Approval error:", err);
@@ -404,27 +410,37 @@ async function run() {
     });
 
 
-    app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
-        const submissionId = req.params.id;
-        const { taskId } = req.body;
+app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
+  const submissionId = req.params.id;
+  const { taskId, workerEmail, buyerName, taskTitle } = req.body;
 
-        try {
-            await submissionsCollection.updateOne(
-            { _id: new ObjectId(submissionId) },
-            { $set: { status: "rejected" } }
-            );
+  try {
+    // 1. Reject the submission
+    await submissionsCollection.updateOne(
+      { _id: new ObjectId(submissionId) },
+      { $set: { status: "rejected" } }
+    );
 
-            await tasksCollection.updateOne(
-            { _id: new ObjectId(taskId) },
-            { $inc: { required_workers: 1 } }
-            );
+    // 2. Return task slot
+    await tasksCollection.updateOne(
+      { _id: new ObjectId(taskId) },
+      { $inc: { required_workers: 1 } }
+    );
 
-            res.send({ success: true });
-        } catch (err) {
-            console.error("Reject error:", err);
-            res.status(500).send({ success: false });
-        }
+    // 3. Create rejection notification
+    await notificationsCollection.insertOne({
+      message: `Your submission for "${taskTitle}" was rejected by ${buyerName}`,
+      toEmail: workerEmail,
+      actionRoute: "/dashboard/worker-home",
+      time: new Date()
     });
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error("Reject error:", err);
+    res.status(500).send({ success: false });
+  }
+});
 
 
      // ==============================
@@ -620,7 +636,7 @@ async function run() {
         const query = req.query.query || "";
 
         try {
-            const searchRegex = new RegExp(query, "i"); // case-insensitive match
+            const searchRegex = new RegExp(query, "i"); 
 
             const users = await usersCollection
             .find({
@@ -792,6 +808,36 @@ async function run() {
             res.status(500).send({ message: "Failed to fetch stats" });
         }
     });
+
+
+    //Notification
+    // routes/notifications.js (or inline in server file)
+        app.post("/notifications", async (req, res) => {
+            const notification = req.body;
+            try {
+                const result = await notificationsCollection.insertOne({
+                ...notification,
+                time: new Date(), // Ensure timestamp
+                });
+                res.send({ success: true, insertedId: result.insertedId });
+            } catch (err) {
+                res.status(500).send({ success: false, message: "Failed to create notification" });
+            }
+        });
+
+        app.get("/notifications", async (req, res) => {
+            const email = req.query.email;
+            if (!email) return res.status(400).send({ success: false, message: "Email required" });
+
+            const notifications = await notificationsCollection
+                .find({ toEmail: email })
+                .sort({ time: -1 }) // Most recent first
+                .toArray();
+
+            res.send(notifications);
+        });
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
