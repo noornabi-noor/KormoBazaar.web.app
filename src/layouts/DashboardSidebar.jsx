@@ -205,31 +205,31 @@ const DashboardSidebar = ({ role }) => {
               to="/dashboard/buyerHome"
               icon={<FaHome />}
               label="Home"
-              color="green"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/myTasks"
               icon={<FaListAlt />}
               label="My Tasks"
-              color="green"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/addTasks"
               icon={<FaFileUpload />}
               label="Add Tasks"
-              color="green"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/purchaseCoins"
               icon={<FaCoins />}
               label="Purchase Coins"
-              color="green"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/paymentHistory"
               icon={<FaFileInvoiceDollar />}
               label="Payment History"
-              color="green"
+              color="indigo"
             />
           </>
         )}
@@ -240,25 +240,25 @@ const DashboardSidebar = ({ role }) => {
               to="/dashboard/workerHome"
               icon={<FaHome />}
               label="Home"
-              color="purple"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/taskList"
               icon={<FaTasks />}
               label="Available Tasks"
-              color="purple"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/mySubmission"
               icon={<FaClipboardCheck />}
               label="My Submissions"
-              color="purple"
+              color="indigo"
             />
             <SidebarLink
               to="/dashboard/withdraw"
               icon={<FaCoins />}
               label="Withdrawals"
-              color="purple"
+              color="indigo"
             />
           </>
         )}

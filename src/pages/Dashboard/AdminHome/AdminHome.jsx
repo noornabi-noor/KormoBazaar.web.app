@@ -24,7 +24,7 @@ const AdminHome = () => {
 
       if (res.data.success) {
         toast.success("✅ Payment marked as approved");
-        setRequests(requests.filter(req => req._id !== reqId));
+        setRequests(requests.filter((req) => req._id !== reqId));
       }
     } catch {
       toast.error("❌ Failed to approve payment");
@@ -32,38 +32,36 @@ const AdminHome = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <h2 className="text-2xl font-bold">🛡️ Admin Dashboard</h2>
+    <div className="max-w-7xl mx-auto px-6 py-10 space-y-10 bg-gradient-to-r from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 rounded-2xl">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">
+          🛡️ Admin Dashboard
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Manage stats and review withdrawal requests
+        </p>
+      </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-blue-100 p-4 rounded shadow text-center">
-          <p className="text-lg">Total Buyers</p>
-          <h3 className="text-2xl font-bold">{stats.totalBuyers || 0}</h3>
-        </div>
-        <div className="bg-green-100 p-4 rounded shadow text-center">
-          <p className="text-lg">Total Workers</p>
-          <h3 className="text-2xl font-bold">{stats.totalWorkers || 0}</h3>
-        </div>
-        <div className="bg-yellow-100 p-4 rounded shadow text-center">
-          <p className="text-lg">Available Coins</p>
-          <h3 className="text-2xl font-bold">{stats.totalCoins || 0}</h3>
-        </div>
-        <div className="bg-purple-100 p-4 rounded shadow text-center">
-          <p className="text-lg">Total Payments ($)</p>
-          <h3 className="text-2xl font-bold">{stats.totalPayments || 0}</h3>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <StatCard label="Total Buyers" value={stats.totalBuyers} color="blue" />
+        <StatCard label="Total Workers" value={stats.totalWorkers} color="green" />
+        <StatCard label="Available Coins" value={stats.totalCoins} color="yellow" />
+        <StatCard label="Total Payments ($)" value={stats.totalPayments} color="purple" />
       </div>
 
       {/* Withdraw Requests Section */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4">💳 Pending Withdrawals</h3>
+      <div className="bg-gradient-to-tr from-sky-100 to-blue-200 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl shadow transition-colors duration-300">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 text-center">
+          💳 Pending Withdrawals
+        </h3>
         {requests.length === 0 ? (
-          <p className="text-gray-500">No pending requests.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center">No pending requests.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
+          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <table className="table w-full text-sm">
+              <thead className="bg-sky-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                 <tr>
                   <th>#</th>
                   <th>Worker</th>
@@ -76,9 +74,9 @@ const AdminHome = () => {
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-700 dark:text-gray-100">
                 {requests.map((req, idx) => (
-                  <tr key={req._id}>
+                  <tr key={req._id} className="hover:bg-sky-100 dark:hover:bg-gray-800">
                     <td>{idx + 1}</td>
                     <td>{req.worker_email}</td>
                     <td>{req.withdrawal_coin}</td>
@@ -104,6 +102,30 @@ const AdminHome = () => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+/* 🔧 Stat Card Component */
+const StatCard = ({ label, value = 0, color }) => {
+  const bg = {
+    blue: "bg-blue-100 dark:bg-blue-900",
+    green: "bg-green-100 dark:bg-green-900",
+    yellow: "bg-yellow-100 dark:bg-yellow-900",
+    purple: "bg-purple-100 dark:bg-purple-900",
+  };
+
+  const text = {
+    blue: "text-blue-800 dark:text-blue-300",
+    green: "text-green-800 dark:text-green-300",
+    yellow: "text-yellow-800 dark:text-yellow-300",
+    purple: "text-purple-800 dark:text-purple-300",
+  };
+
+  return (
+    <div className={`rounded-xl p-4 shadow text-center ${bg[color]}`}>
+      <p className={`text-md mb-1 font-medium ${text[color]}`}>{label}</p>
+      <h3 className={`text-3xl font-bold ${text[color]}`}>{value}</h3>
     </div>
   );
 };

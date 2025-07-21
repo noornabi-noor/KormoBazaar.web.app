@@ -26,7 +26,7 @@ const WeeklyPaymentSection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex-1 text-gray-800 dark:text-gray-100"
         >
-          <h2 className="text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-4">
+          <h2 className="text-3xl font-bold text-primary-gradient dark:text-indigo-300 mb-4">
             Weekly Payments with Peace of Mind
           </h2>
           <p className="mb-4 text-lg text-gray-700 dark:text-gray-300">

@@ -14,7 +14,7 @@ const CommunitySection = () => {
           transition={{ duration: 0.6 }}
           className="flex-1 text-gray-800 dark:text-gray-100"
         >
-          <h2 className="text-3xl font-bold text-blue-700 dark:text-blue-300 mb-4">
+          <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300 mb-4">
             A great community is made even better by you
           </h2>
           <p className="text-lg mb-4 text-gray-700 dark:text-gray-300">You are important to us.</p>
