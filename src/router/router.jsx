@@ -25,6 +25,7 @@ import AdminProtected from "../routes/AdminProtected";
 import ManageUsers from "../pages/Dashboard/ManageUsers/ManageUsers";
 import ManageTasks from "../pages/Dashboard/ManageTasks/ManageTasks";
 import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
+import DashboardLayout from "../layouts/DashboardLayout";
 
 export const router = createBrowserRouter([
   {
@@ -68,7 +69,7 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <PrivateRoutes>
-        <UnifiedDashboard />
+        <DashboardLayout/>
       </PrivateRoutes>
     ),
     children: [
