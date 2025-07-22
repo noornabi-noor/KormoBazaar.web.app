@@ -5,7 +5,6 @@ import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
 import { ThemeContext } from "../../../contexts/ThemeContext/ThemeContext";
 
-
 const Navbar = () => {
   const { user, logOut } = use(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -16,7 +15,7 @@ const Navbar = () => {
     try {
       await logOut();
       toast.success("✅ Logged out successfully");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
     }
@@ -28,14 +27,22 @@ const Navbar = () => {
         <NavLink to="/">Home</NavLink>
       </li>
       {user && (
-        <>
-          <li>
-            <NavLink to="/dashboard">Dashboard</NavLink>
-          </li>
-        </>
+        <li>
+          <NavLink to="/dashboard">Dashboard</NavLink>
+        </li>
       )}
       <li>
         <NavLink to="/about">About Us</NavLink>
+      </li>
+      <li>
+        <a
+          href="https://github.com/Programming-Hero-Web-Course4/b11a12-client-side-noornabi-noor.git"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-500 border border-indigo-500 px-3 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900 transition"
+        >
+          Join as Developer
+        </a>
       </li>
     </>
   );
