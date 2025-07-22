@@ -197,7 +197,7 @@ const BuyerHome = () => {
               <strong>Task:</strong> {viewSubmission.task_title}
             </p>
             <p>
-              <strong>Details:</strong> {viewSubmission.submission_detail}
+              <strong>Details:</strong> {viewSubmission.submission_details}
             </p>
             <div className="modal-action">
               <button
