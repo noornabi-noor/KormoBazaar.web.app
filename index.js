@@ -485,38 +485,6 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             }
         });
 
-
-    // app.post('/submit-task', async (req, res) => {
-    //     const submission = req.body;
-    //     try {
-    //         // Fetch worker and buyer details
-    //         const worker = await usersCollection.findOne({ email: submission.worker_email });
-    //         const buyer = await usersCollection.findOne({ email: submission.buyer_email });
-
-    //         // Construct full submission payload
-    //         const fullSubmission = {
-    //         ...submission,
-    //         worker_name: worker?.name || submission.worker_email,
-    //         buyer_name: buyer?.name || submission.buyer_email,
-    //         submittedAt: new Date()
-    //         };
-
-    //         // Insert into collection
-    //         await submissionsCollection.insertOne(fullSubmission);
-
-    //         // Decrement available workers for task
-    //         await tasksCollection.updateOne(
-    //         { _id: new ObjectId(submission.task_id) },
-    //         { $inc: { required_workers: -1 } }
-    //         );
-
-    //         res.json({ success: true, message: "Submission saved" });
-    //     } catch (error) {
-    //         console.error("Submission error:", error);
-    //         res.status(500).json({ success: false, message: "Server error" });
-    //     }
-    // });
-
     app.post('/submit-task', async (req, res) => {
         const submission = req.body;
 
@@ -559,13 +527,24 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
 
     app.get('/my-submissions/:email', async (req, res) => {
         const { email } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
         try {
+            const total = await submissionsCollection.countDocuments({ worker_email: email });
+
             const submissions = await submissionsCollection
             .find({ worker_email: email })
-            .sort({ submittedAt: -1 }) // Newest first
+            .sort({ submittedAt: -1 })
+            .skip(skip)
+            .limit(limit)
             .toArray();
 
-            res.json(submissions);
+            res.json({
+            submissions,
+            totalPages: Math.ceil(total / limit)
+            });
         } catch (error) {
             console.error("My submissions fetch error:", error);
             res.status(500).json({ message: "Failed to fetch submissions" });
