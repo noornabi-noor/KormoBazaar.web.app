@@ -4,12 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { ToastContainer, toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const ITEMS_PER_PAGE = 5;
 
 const MySubmissions = () => {
   const { user } = UseAuth();
   const [page, setPage] = useState(1);
+
+  const axiosSecure = useAxiosSecure();
 
   const {
     data = { submissions: [], totalPages: 1 },
@@ -19,13 +22,12 @@ const MySubmissions = () => {
     queryKey: ["mySubmissions", user?.email, page],
     enabled: !!user?.email,
     queryFn: async () => {
-      const res = await fetch(
-        `http://localhost:5000/my-submissions/${user.email}?page=${page}&limit=${ITEMS_PER_PAGE}`
+      const res = await axiosSecure.get(
+        `/my-submissions/${user.email}?page=${page}&limit=${ITEMS_PER_PAGE}`
       );
-      if (!res.ok) throw new Error("Failed to fetch submissions");
-      return res.json(); 
+      return res.data;
     },
-    keepPreviousData: true, 
+    keepPreviousData: true,
   });
 
   if (error) {
@@ -39,7 +41,10 @@ const MySubmissions = () => {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-3xl font-bold ">
-          📬<span className="text-primary-gradient dark:text-blue-300">My Submissions</span> 
+          📬
+          <span className="text-primary-gradient dark:text-blue-300">
+            My Submissions
+          </span>
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Track your submission status and details
@@ -51,7 +56,9 @@ const MySubmissions = () => {
         {isLoading ? (
           <div className="text-center py-12">
             <span className="loading loading-bars text-primary"></span>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">Fetching submissions...</p>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              Fetching submissions...
+            </p>
           </div>
         ) : submissions.length > 0 ? (
           <AnimatePresence mode="wait">
@@ -75,11 +82,16 @@ const MySubmissions = () => {
                 </thead>
                 <tbody className="text-gray-700 dark:text-gray-100">
                   {submissions.map((s) => (
-                    <tr key={s._id} className="hover:bg-sky-50 dark:hover:bg-gray-800 transition">
+                    <tr
+                      key={s._id}
+                      className="hover:bg-sky-50 dark:hover:bg-gray-800 transition"
+                    >
                       <td>{s.task_title}</td>
                       <td>
                         {s.buyer_name} <br />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{s.buyer_email}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {s.buyer_email}
+                        </span>
                       </td>
                       <td>${s.payable_amount}</td>
                       <td>{new Date(s.current_date).toLocaleDateString()}</td>

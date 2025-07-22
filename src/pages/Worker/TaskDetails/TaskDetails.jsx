@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import UseAuth from "../../../hooks/UseAuth";
 import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const TaskDetails = () => {
   const { id } = useParams();
@@ -10,7 +11,8 @@ const TaskDetails = () => {
   const [submission, setSubmission] = useState("");
   const navigate = useNavigate();
 
-  // 🔧 Fetch task data by ID
+  const axiosSecure = useAxiosSecure();
+
   const {
     data: task,
     isLoading,
@@ -19,9 +21,8 @@ const TaskDetails = () => {
     queryKey: ["taskDetails", id],
     enabled: !!id,
     queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/task/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch task");
-      return res.json();
+      const res = await axiosSecure.get(`/task/${id}`);
+      return res.data;
     },
   });
 
@@ -68,9 +69,7 @@ const TaskDetails = () => {
 
   // ⏳ Loading state
   if (isLoading) {
-    return (
-      <span className="loading loading-spinner text-primary"></span>
-    );
+    return <span className="loading loading-spinner text-primary"></span>;
   }
 
   // ❌ Error state
@@ -96,7 +95,6 @@ const TaskDetails = () => {
 
       {/* Task Info */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
-
         <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
           {/* ✅ Hero Image */}
           <div className="flex justify-center">

@@ -1,11 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const TaskList = () => {
   const navigate = useNavigate();
 
   // 🔧 Fetch available tasks
+  const axiosSecure = useAxiosSecure(); 
+
   const {
     data: tasks = [],
     isLoading,
@@ -13,9 +16,8 @@ const TaskList = () => {
   } = useQuery({
     queryKey: ["availableTasks"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/available-tasks");
-      if (!res.ok) throw new Error("Failed to fetch tasks");
-      return res.json();
+      const res = await axiosSecure.get("/available-tasks");
+      return res.data;
     },
   });
 

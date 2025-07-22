@@ -4,25 +4,27 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import UpdateTaskForm from "../UpdateTaskForm/UpdateTaskForm";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const MyTasks = () => {
   const { user } = UseAuth();
   const queryClient = useQueryClient();
   const [editTask, setEditTask] = useState(null);
+  const axiosSecure = useAxiosSecure();
 
   // 🔄 Query tasks
-  const {
-    data: tasks = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["myTasks", user?.email],
-    enabled: !!user?.email,
-    queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/my-tasks/${user.email}`);
-      return res.json();
-    },
-  });
+const {
+  data: tasks = [],
+  isLoading,
+  error,
+} = useQuery({
+  queryKey: ["myTasks", user?.email],
+  enabled: !!user?.email,
+  queryFn: async () => {
+    const res = await axiosSecure.get(`/my-tasks/${user.email}`);
+    return res.data;
+  },
+});
 
   // 🔧 Update mutation
   const updateMutation = useMutation({
