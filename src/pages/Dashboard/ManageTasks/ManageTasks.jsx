@@ -39,9 +39,7 @@ const ManageTasks = () => {
   // 🚦 Optional loading/error states
   if (isLoading) {
     return (
-      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
-        Loading tasks...
-      </p>
+      <span className="loading loading-spinner text-primary"></span>
     );
   }
 

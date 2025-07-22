@@ -4,7 +4,7 @@ import DashboardSidebar from "../../layouts/DashboardSidebar";
 const DashboardWrapper = () => {
   const [role, loading] = useRole();
 
-  if (loading) return <div className="text-center py-12">Loading dashboard...</div>;
+  if (loading) return <span className="loading loading-spinner text-primary"></span>;
 
   return <DashboardSidebar role={role} />;
 };

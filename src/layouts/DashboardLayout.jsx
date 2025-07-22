@@ -8,7 +8,7 @@ const DashboardLayout = () => {
   const [role, loading] = useRole();
 
   if (loading) {
-    return <div className="text-center py-6">Loading dashboard...</div>;
+    <span className="loading loading-spinner text-primary"></span>
   }
 
   return (

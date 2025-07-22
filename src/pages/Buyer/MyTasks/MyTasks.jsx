@@ -91,7 +91,7 @@ const MyTasks = () => {
   };
 
   if (!user?.email || isLoading) {
-    return <p className="text-center py-6 text-gray-500 dark:text-gray-400">Loading tasks...</p>;
+    return <span className="loading loading-spinner text-primary"></span>
   }
 
   if (error) {

@@ -24,9 +24,7 @@ const PaymentHistory = () => {
   // ⏳ Loading fallback
   if (isLoading) {
     return (
-      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
-        Loading payment history...
-      </p>
+      <span className="loading loading-spinner text-primary"></span>
     );
   }
 

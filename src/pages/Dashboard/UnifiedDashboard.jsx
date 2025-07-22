@@ -5,7 +5,7 @@ import { Outlet } from "react-router";
 const UnifiedDashboard = () => {
   const [role, loading] = useRole();
 
-  if (loading) return <div className="text-center py-6">Loading dashboard...</div>;
+  if (loading) return <span className="loading loading-spinner text-primary"></span>;
 
   return (
     <div className="flex min-h-screen">

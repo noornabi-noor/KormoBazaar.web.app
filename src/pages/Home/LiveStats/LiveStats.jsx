@@ -97,9 +97,7 @@ const LiveStats = () => {
   // ⏳ Loading fallback
   if (isLoading) {
     return (
-      <p className="text-center text-gray-500 dark:text-gray-400 py-10">
-        Loading stats...
-      </p>
+      <span className="loading loading-spinner text-primary"></span>
     );
   }
 

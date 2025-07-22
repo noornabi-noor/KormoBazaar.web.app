@@ -14,7 +14,7 @@ const PrivateRoutes = ({ children, allowedRoles }) => {
   const location = useLocation();
 
   if (loading) {
-    return <span className="loading loading-spinner loading-xl"></span>;
+    return <span className="loading loading-spinner text-primary"></span>;
   }
 
   if (!user) {
