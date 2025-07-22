@@ -36,7 +36,7 @@ const TaskList = () => {
             <p className="text-gray-700 dark:text-gray-300"><strong>Workers Needed:</strong> {task.required_workers}</p>
 
             <button
-              onClick={() => navigate(`/task/${task._id}`)}
+              onClick={() => navigate(`/dashboard/task/${task._id}`)}
               className="btn btn-primary mt-4 w-full"
             >
               View Details

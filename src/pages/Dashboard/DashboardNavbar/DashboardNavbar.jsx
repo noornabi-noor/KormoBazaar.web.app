@@ -90,7 +90,7 @@ const DashboardNavbar = () => {
   const coins = userData.coins || 0;
 
   return (
-    <div className="navbar flex justify-between px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 relative z-10">
+    <div className="navbar flex justify-between px-6 py-4 navbar-theme border-b border-gray-200 dark:border-gray-700 relative z-10">
       <Link to="/" className="flex items-center gap-2">
         <KormoBazaarLogo />
       </Link>

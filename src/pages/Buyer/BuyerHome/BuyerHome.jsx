@@ -29,12 +29,20 @@ const BuyerHome = () => {
     }
   }, [user, axiosSecure]);
 
-  const handleApprove = async (submissionId, workerEmail, payable) => {
+  const handleApprove = async (
+    submissionId,
+    workerEmail,
+    payable,
+    taskTitle
+  ) => {
     try {
       await axiosSecure.patch(`/buyer/approveSubmission/${submissionId}`, {
         workerEmail,
         coins: payable,
+        buyerName: user.displayName || "Buyer",
+        taskTitle, 
       });
+
       toast.success("✅ Approved!");
       setPendingSubmissions((prev) =>
         prev.filter((s) => s._id !== submissionId)
@@ -132,13 +140,15 @@ const BuyerHome = () => {
                       >
                         View
                       </button>
+
                       <button
                         className="btn btn-sm btn-success"
                         onClick={() =>
                           handleApprove(
                             submission._id,
                             submission.worker_email,
-                            submission.payable_amount
+                            submission.payable_amount,
+                            submission.task_title 
                           )
                         }
                       >

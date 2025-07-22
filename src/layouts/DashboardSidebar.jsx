@@ -162,7 +162,7 @@ const DashboardSidebar = ({ role }) => {
   return (
     <div className="text-gray-700 dark:text-gray-200">
       {/* Header: Back Arrow + Title */}
-      <div className="flex items-center gap-x-2 mb-4 mt-5">
+      <div className="flex items-center gap-x-2 mb-4 mt-5 ml-3">
         <Link
           to="/"
           className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"

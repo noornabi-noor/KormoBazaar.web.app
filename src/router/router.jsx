@@ -40,7 +40,6 @@ export const router = createBrowserRouter([
         path: "myProfile",
         Component: MyProfile,
       },
-      { path: "task/:id", Component: TaskDetails },
       {
         path: "/payment",
         Component: Payment,
@@ -90,6 +89,7 @@ export const router = createBrowserRouter([
       // Worker
       { path: "workerHome", element: <WorkerHome /> },
       { path: "taskList", element: <TaskList /> },
+      { path: "task/:id", Component: TaskDetails },
       { path: "mySubmission", element: <MySubmissions /> },
       { path: "withdraw", element: <WithdrawForm /> },
     ],
