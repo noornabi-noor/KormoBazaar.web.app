@@ -37,6 +37,7 @@ const TaskDetails = () => {
       worker_name: user.name,
       buyer_name: task.buyer_name,
       buyer_email: task.buyer_email,
+      task_image: task.task_image,
       submission_details: submission,
       current_date: new Date().toISOString(),
       status: "pending",
@@ -54,7 +55,7 @@ const TaskDetails = () => {
         toast.success("✅ Submission successful!");
         setSubmission("");
         setTimeout(() => {
-          navigate("/dashboard/workerHome");
+          navigate("/dashboard/mySubmission");
         }, 1000);
       } else {
         toast.error("❌ " + (result.message || "Submission failed"));
@@ -87,8 +88,8 @@ const TaskDetails = () => {
     <div className="max-w-3xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">
-          {task.task_title}
+        <h2 className="text-2xl font-semibold text-blue-600 dark:text-blue-300">
+          📋 {task.task_title}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Read the task and submit your work below
@@ -96,18 +97,62 @@ const TaskDetails = () => {
       </div>
 
       {/* Task Info */}
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700 space-y-2 text-gray-800 dark:text-gray-100">
-        <p><strong>Detail:</strong> {task.task_detail}</p>
-        <p><strong>Pay:</strong> ${task.payable_amount}</p>
-        <p><strong>Buyer Name:</strong> {task.buyer_name}</p>
-        <p><strong>Buyer Email:</strong> {task.buyer_email}</p>
-        <p><strong>Required Workers:</strong> {task.required_workers}</p>
-        <p><strong>Deadline:</strong> {new Date(task.completion_date).toLocaleDateString()}</p>
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
+
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
+          {/* ✅ Hero Image */}
+          <div className="flex justify-center">
+            <div className="aspect-square w-full max-w-sm overflow-hidden rounded-lg border shadow">
+              <img
+                src={task.task_image}
+                alt="Task"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ✅ Main Info */}
+        <div className="space-y-2">
+          <p className="text-gray-700 dark:text-gray-300">
+            <strong className="text-blue-500 dark:text-blue-400">
+              📝 Detail:
+            </strong>{" "}
+            {task.task_detail}
+          </p>
+        </div>
+
+        {/* ✅ Pay & Requirement */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <p>
+            <strong>💰 Pay:</strong> ${task.payable_amount}
+          </p>
+          <p>
+            <strong>👥 Required Workers:</strong> {task.required_workers}
+          </p>
+          <p>
+            <strong>📅 Deadline:</strong>{" "}
+            {new Date(task.completion_date).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* ✅ Buyer Info */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-4 text-sm space-y-1">
+          <p>
+            <strong>👤 Buyer Name:</strong> {task.buyer_name}
+          </p>
+          <p>
+            <strong>📧 Buyer Email:</strong> {task.buyer_email}
+          </p>
+        </div>
       </div>
 
       {/* Submission Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label htmlFor="submission" className="block text-lg font-medium text-gray-800 dark:text-white">
+        <label
+          htmlFor="submission"
+          className="block text-lg font-medium text-gray-800 dark:text-white"
+        >
           Your Submission
         </label>
         <textarea
