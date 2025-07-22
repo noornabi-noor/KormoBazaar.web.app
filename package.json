@@ -17,7 +17,7 @@
     "aos": "^2.3.4",
     "axios": "^1.10.0",
     "firebase": "^11.10.0",
-    "framer-motion": "^12.23.3",
+    "framer-motion": "^12.23.6",
     "lodash.debounce": "^4.0.8",
     "lottie-react": "^2.4.1",
     "react": "^19.1.0",
