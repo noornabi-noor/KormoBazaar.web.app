@@ -23,9 +23,9 @@ const MySubmissions = () => {
         `http://localhost:5000/my-submissions/${user.email}?page=${page}&limit=${ITEMS_PER_PAGE}`
       );
       if (!res.ok) throw new Error("Failed to fetch submissions");
-      return res.json(); // { submissions: [...], totalPages: n }
+      return res.json(); 
     },
-    keepPreviousData: true, // preserves old data while loading new page
+    keepPreviousData: true, 
   });
 
   if (error) {

@@ -43,7 +43,7 @@ const PaymentHistory = () => {
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300">
       {/* Heading */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">💳 Payment History</h2>
+        <h2 className="text-3xl font-bold ">💳 <span className="text-primary-gradient dark:text-blue-300">Payment History</span> </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Review your past coin purchase records
         </p>
