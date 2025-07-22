@@ -1,26 +1,49 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import UseAuth from "../../../hooks/UseAuth";
+import { useQuery } from "@tanstack/react-query";
 
 const PaymentHistory = () => {
   const { user } = UseAuth();
   const axiosSecure = useAxiosSecure();
-  const [payments, setPayments] = useState([]);
 
-  useEffect(() => {
-    if (user?.email) {
-      axiosSecure
-        .get(`/payments?email=${user.email}`)
-        .then((res) => setPayments(res.data))
-        .catch(() => console.error("Error fetching payments"));
-    }
-  }, [user, axiosSecure]);
+  // 🔄 Fetch payments
+  const {
+    data: payments = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["paymentHistory", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/payments?email=${user.email}`);
+      return res.data;
+    },
+  });
+
+  // ⏳ Loading fallback
+  if (isLoading) {
+    return (
+      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
+        Loading payment history...
+      </p>
+    );
+  }
+
+  // ⚠️ Error fallback
+  if (error) {
+    return (
+      <p className="text-center py-10 text-red-500 dark:text-red-400">
+        ❌ Failed to fetch payment history
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300">
       {/* Heading */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">💳 Payment History</h2>
+        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">💳 Payment History</h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Review your past coin purchase records
         </p>
@@ -53,7 +76,9 @@ const PaymentHistory = () => {
           </table>
         </div>
       ) : (
-        <p className="text-center text-gray-500 dark:text-gray-400">No payment history found.</p>
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          No payment history found.
+        </p>
       )}
     </div>
   );

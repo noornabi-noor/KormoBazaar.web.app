@@ -1,17 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 
 const AdminHome = () => {
   const axiosSecure = useAxiosSecure();
-  const [stats, setStats] = useState({});
-  const [requests, setRequests] = useState([]);
 
-  useEffect(() => {
-    axiosSecure.get("/admin/stats").then((res) => setStats(res.data));
-    axiosSecure.get("/admin/pendingWithdrawals").then((res) => setRequests(res.data));
-  }, [axiosSecure]);
+  // 🔍 Fetch platform stats
+  const {
+    data: stats = {
+      totalBuyers: 0,
+      totalWorkers: 0,
+      totalCoins: 0,
+      totalPayments: 0,
+    },
+    isLoading: loadingStats,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["adminStats"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/admin/stats");
+      return res.data;
+    },
+  });
 
+  // 🔍 Fetch pending withdrawals
+  const {
+    data: requests = [],
+    isLoading: loadingWithdrawals,
+    error: withdrawError,
+    refetch,
+  } = useQuery({
+    queryKey: ["pendingWithdrawals"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/admin/pendingWithdrawals");
+      return res.data;
+    },
+  });
+
+  // ✅ Handle approval
   const handleApprove = async (reqId, workerEmail, coinAmount) => {
     const confirm = window.confirm("Confirm payment success?");
     if (!confirm) return;
@@ -24,12 +51,24 @@ const AdminHome = () => {
 
       if (res.data.success) {
         toast.success("✅ Payment marked as approved");
-        setRequests(requests.filter((req) => req._id !== reqId));
+        refetch(); // refresh pending list
       }
     } catch {
       toast.error("❌ Failed to approve payment");
     }
   };
+
+  if (loadingStats || loadingWithdrawals) {
+    return (
+      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
+        Loading admin dashboard...
+      </p>
+    );
+  }
+
+  if (statsError || withdrawError) {
+    toast.error("❌ Failed to load admin data");
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-10 bg-gradient-to-r from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 rounded-2xl">
@@ -106,7 +145,7 @@ const AdminHome = () => {
   );
 };
 
-/* 🔧 Stat Card Component */
+// 🔧 StatCard Component
 const StatCard = ({ label, value = 0, color }) => {
   const bg = {
     blue: "bg-blue-100 dark:bg-blue-900",

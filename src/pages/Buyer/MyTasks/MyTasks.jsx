@@ -1,82 +1,108 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import UseAuth from "../../../hooks/UseAuth";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import UpdateTaskForm from "../UpdateTaskForm/UpdateTaskForm";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const MyTasks = () => {
   const { user } = UseAuth();
-  const [tasks, setTasks] = useState([]);
+  const queryClient = useQueryClient();
   const [editTask, setEditTask] = useState(null);
 
-  if (!user || !user.email) {
-    return <p className="text-center py-6 text-gray-500 dark:text-gray-400">Loading tasks...</p>;
-  }
+  // 🔄 Query tasks
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["myTasks", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await fetch(`http://localhost:5000/my-tasks/${user.email}`);
+      return res.json();
+    },
+  });
 
-  useEffect(() => {
-    fetch(`http://localhost:5000/my-tasks/${user.email}`)
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
-      .catch((err) => console.error("Fetch Error:", err));
-  }, [user.email]);
-
-  const handleUpdate = async (id, updatedFields) => {
-    try {
+  // 🔧 Update mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updatedFields }) => {
       const res = await fetch(`http://localhost:5000/update-task/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFields),
       });
-
-      const result = await res.json();
-
+      return res.json();
+    },
+    onSuccess: (result, variables) => {
       if (result.success) {
         toast.success("✅ Task updated!");
-        setTasks((prev) =>
-          prev.map((task) => (task._id === id ? { ...task, ...updatedFields } : task))
+        queryClient.setQueryData(["myTasks", user.email], (prev) =>
+          prev.map((task) =>
+            task._id === variables.id ? { ...task, ...variables.updatedFields } : task
+          )
         );
       } else {
         toast.error("Update failed");
       }
-    } catch {
-      toast.error("Server error");
-    }
-  };
+    },
+    onError: () => toast.error("Server error"),
+  });
 
-  const handleDelete = async (task) => {
-    const { _id, required_workers, payable_amount, completion_date } = task;
-    const isUnCompleted = new Date(completion_date) > new Date();
-    const refillAmount = Number(required_workers) * Number(payable_amount);
-
-    try {
-      const res = await fetch(`http://localhost:5000/delete-task/${_id}`, { method: "DELETE" });
+  // 🔧 Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async ({ task, refill }) => {
+      const { _id } = task;
+      const res = await fetch(`http://localhost:5000/delete-task/${_id}`, {
+        method: "DELETE",
+      });
       const result = await res.json();
 
-      if (result.success) {
-        setTasks((prev) => prev.filter((t) => t._id !== _id));
-        toast.success("🗑️ Task deleted");
+      if (!result.success) throw new Error(result.message || "Delete failed");
 
-        if (isUnCompleted) {
-          await fetch(`http://localhost:5000/refill-coin`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email, coins: refillAmount }),
-          });
-          toast.info(`💰 ${refillAmount} coins refunded`);
-        }
-      } else {
-        toast.error(result.message || "Delete failed");
+      if (refill) {
+        await fetch(`http://localhost:5000/refill-coin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email, coins: refill }),
+        });
       }
-    } catch {
-      toast.error("Server error");
-    }
+
+      return { success: true, refill };
+    },
+    onSuccess: ({ refill }) => {
+      toast.success("🗑️ Task deleted");
+      if (refill) toast.info(`💰 ${refill} coins refunded`);
+      queryClient.invalidateQueries(["myTasks", user.email]);
+    },
+    onError: () => toast.error("Server error"),
+  });
+
+  const handleUpdate = (id, updatedFields) => {
+    updateMutation.mutate({ id, updatedFields });
   };
+
+  const handleDelete = (task) => {
+    const isUnCompleted = new Date(task.completion_date) > new Date();
+    const refillAmount = isUnCompleted
+      ? Number(task.required_workers) * Number(task.payable_amount)
+      : 0;
+    deleteMutation.mutate({ task, refill: refillAmount });
+  };
+
+  if (!user?.email || isLoading) {
+    return <p className="text-center py-6 text-gray-500 dark:text-gray-400">Loading tasks...</p>;
+  }
+
+  if (error) {
+    toast.error("❌ Failed to load tasks");
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">
       {/* Heading */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">📝 My Tasks</h2>
+        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">📝 My Tasks</h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and edit your posted tasks</p>
       </div>
 
@@ -102,10 +128,7 @@ const MyTasks = () => {
                   <td>{task.submission_info}</td>
                   <td>{new Date(task.completion_date).toLocaleDateString()}</td>
                   <td className="space-x-2">
-                    <button
-                      className="btn btn-sm btn-outline"
-                      onClick={() => setEditTask(task)}
-                    >
+                    <button className="btn btn-sm btn-outline" onClick={() => setEditTask(task)}>
                       Update
                     </button>
                     <button

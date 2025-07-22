@@ -64,24 +64,23 @@ const Login = () => {
       });
   };
 
-    const handleResetPassword = async () => {
-      const email = prompt('Please enter your email for password reset:');
-      if (!email) {
-        toast.error('Email is required for password reset');
-        return;
-      }
+  const handleResetPassword = async () => {
+    const email = prompt("Please enter your email for password reset:");
+    if (!email) {
+      toast.error("Email is required for password reset");
+      return;
+    }
 
-      try {
-        await passwordReset(email);
-        toast.success('📧 Password reset email sent!');
-      } catch (error) {
-        toast.error(`❌ ${error.message}`);
-      }
+    try {
+      await passwordReset(email);
+      toast.success("📧 Password reset email sent!");
+    } catch (error) {
+      toast.error(`❌ ${error.message}`);
+    }
   };
 
   return (
     <div className="work-sans-text min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
-      
       <div className="w-full max-w-md bg-base-300 p-8 rounded-xl shadow-lg">
         <h2 className="text-primary-gradient text-center text-4xl mb-12">
           Login
@@ -102,6 +101,16 @@ const Login = () => {
             className="input input-bordered w-full"
             required
           />
+
+          <p className="text-sm text-right">
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              className="text-blue-500 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </p>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 

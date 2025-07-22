@@ -1,22 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import UseAuth from "../../../hooks/UseAuth";
+import { useQuery } from "@tanstack/react-query";
 
 const TaskDetails = () => {
   const { id } = useParams();
   const { user } = UseAuth();
-  const [task, setTask] = useState(null);
   const [submission, setSubmission] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch(`http://localhost:5000/task/${id}`)
-      .then((res) => res.json())
-      .then((data) => setTask(data))
-      .catch((err) => console.error("Task fetch error:", err));
-  }, [id]);
+  // 🔧 Fetch task data by ID
+  const {
+    data: task,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["taskDetails", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const res = await fetch(`http://localhost:5000/task/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch task");
+      return res.json();
+    },
+  });
 
+  // 🔔 Submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -48,7 +57,7 @@ const TaskDetails = () => {
           navigate("/dashboard/workerHome");
         }, 1000);
       } else {
-        toast.error("❌ " + result.message || "Submission failed");
+        toast.error("❌ " + (result.message || "Submission failed"));
       }
     } catch (err) {
       console.error("Submit Error:", err);
@@ -56,12 +65,23 @@ const TaskDetails = () => {
     }
   };
 
-  if (!task)
+  // ⏳ Loading state
+  if (isLoading) {
     return (
       <p className="text-center py-6 text-gray-500 dark:text-gray-400">
         Loading task...
       </p>
     );
+  }
+
+  // ❌ Error state
+  if (error || !task) {
+    return (
+      <p className="text-center py-6 text-red-500 dark:text-red-400">
+        Failed to load task. Please try again later.
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-6">
@@ -77,33 +97,17 @@ const TaskDetails = () => {
 
       {/* Task Info */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700 space-y-2 text-gray-800 dark:text-gray-100">
-        <p>
-          <strong>Detail:</strong> {task.task_detail}
-        </p>
-        <p>
-          <strong>Pay:</strong> ${task.payable_amount}
-        </p>
-        <p>
-          <strong>Buyer Name:</strong> {task.buyer_name}
-        </p>
-        <p>
-          <strong>Buyer Email:</strong> {task.buyer_email}
-        </p>
-        <p>
-          <strong>Required Workers:</strong> {task.required_workers}
-        </p>
-        <p>
-          <strong>Deadline:</strong>{" "}
-          {new Date(task.completion_date).toLocaleDateString()}
-        </p>
+        <p><strong>Detail:</strong> {task.task_detail}</p>
+        <p><strong>Pay:</strong> ${task.payable_amount}</p>
+        <p><strong>Buyer Name:</strong> {task.buyer_name}</p>
+        <p><strong>Buyer Email:</strong> {task.buyer_email}</p>
+        <p><strong>Required Workers:</strong> {task.required_workers}</p>
+        <p><strong>Deadline:</strong> {new Date(task.completion_date).toLocaleDateString()}</p>
       </div>
 
       {/* Submission Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label
-          htmlFor="submission"
-          className="block text-lg font-medium text-gray-800 dark:text-white"
-        >
+        <label htmlFor="submission" className="block text-lg font-medium text-gray-800 dark:text-white">
           Your Submission
         </label>
         <textarea
@@ -112,7 +116,7 @@ const TaskDetails = () => {
           required
           placeholder="Your submission details..."
           className="textarea textarea-bordered w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
-        ></textarea>
+        />
         <button type="submit" className="btn btn-success w-full">
           Submit Task
         </button>

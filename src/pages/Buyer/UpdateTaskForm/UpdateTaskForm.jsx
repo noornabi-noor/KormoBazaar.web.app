@@ -28,7 +28,7 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
       className="space-y-6 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-2xl p-6 shadow-lg transition-colors duration-300 max-w-lg w-full"
     >
       {/* Heading */}
-      <h2 className="text-2xl font-bold text-center">✏️ Update Task</h2>
+      <h2 className="text-2xl font-bold text-center ">✏️ <span className="text-primary-gradient dark:text-blue-300">Update Task</span></h2>
 
       {/* Title */}
       <div>

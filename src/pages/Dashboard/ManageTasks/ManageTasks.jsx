@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import { useQuery } from "@tanstack/react-query";
 
 const ManageTasks = () => {
   const axiosSecure = useAxiosSecure();
-  const [tasks, setTasks] = useState([]);
 
-  useEffect(() => {
-    axiosSecure
-      .get("/admin/tasks")
-      .then((res) => setTasks(res.data || []))
-      .catch(() => toast.error("❌ Failed to load tasks"));
-  }, [axiosSecure]);
+  // 🔄 Fetch tasks using TanStack Query
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["adminTasks"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/admin/tasks");
+      return res.data || [];
+    },
+  });
 
+  // 🔧 Handle delete
   const handleDelete = async (id) => {
     const confirm = window.confirm("Are you sure you want to delete this task?");
     if (!confirm) return;
@@ -21,12 +29,25 @@ const ManageTasks = () => {
       const res = await axiosSecure.delete(`/admin/tasks/${id}`);
       if (res.data?.deletedCount > 0) {
         toast.success("✅ Task deleted");
-        setTasks(tasks.filter((task) => task._id !== id));
+        refetch(); // Refresh tasks list
       }
     } catch {
       toast.error("❌ Failed to delete task");
     }
   };
+
+  // 🚦 Optional loading/error states
+  if (isLoading) {
+    return (
+      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
+        Loading tasks...
+      </p>
+    );
+  }
+
+  if (error) {
+    toast.error("❌ Failed to load tasks");
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-gray-200 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">

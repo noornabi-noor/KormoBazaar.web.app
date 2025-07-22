@@ -1,38 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import debounce from "lodash.debounce";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import { useQuery } from "@tanstack/react-query";
+import debounce from "lodash.debounce";
 
 const ManageUsers = () => {
   const axiosSecure = useAxiosSecure();
-  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const fetchUsers = debounce(async () => {
-      if (!search) return setUsers([]);
+  // 🔁 Debounced search value
+  const debouncedSearch = useMemo(() => {
+    return debounce((value, fn) => fn(value), 300);
+  }, []);
 
-      try {
-        const res = await axiosSecure.get(`/admin/searchUsers?query=${search}`);
-        setUsers(res.data || []);
-      } catch {
-        toast.error("❌ Failed to fetch users");
-      }
-    }, 300);
+  const {
+    data: users = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["searchUsers", search],
+    enabled: !!search,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/admin/searchUsers?query=${search}`);
+      return res.data || [];
+    },
+  });
 
-    fetchUsers();
-    return () => fetchUsers.cancel();
-  }, [search, axiosSecure]);
+  // 🔧 Input handler with debounce and manual refetch
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    debouncedSearch(value, () => refetch());
+  };
 
   const handleRoleToggle = async (email, currentRole) => {
     const newRole = currentRole === "admin" ? "worker" : "admin";
-
     try {
       const res = await axiosSecure.patch(`/admin/updateUserRole/${email}`, { role: newRole });
 
       if (res.data.modifiedCount > 0) {
         toast.success(`✅ ${email} is now ${newRole}`);
-        setUsers(users.map((u) => (u.email === email ? { ...u, role: newRole } : u)));
+        refetch(); // Refresh user list
       }
     } catch {
       toast.error("❌ Failed to update role");
@@ -54,14 +63,16 @@ const ManageUsers = () => {
           placeholder="Search by name or email..."
           className="input input-bordered w-full md:w-3/4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
         />
       </div>
 
       {/* Table or Message */}
       <div>
-        {users.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 mt-6">No users found.</p>
+        {isLoading ? (
+          <p className="text-center mt-6 text-gray-500 dark:text-gray-400">Searching users...</p>
+        ) : users.length === 0 ? (
+          <p className="text-center mt-6 text-gray-500 dark:text-gray-400">No users found.</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
             <table className="table w-full text-sm">

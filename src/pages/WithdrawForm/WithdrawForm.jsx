@@ -4,28 +4,34 @@ import UseAuth from "../../hooks/UseAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
 const WithdrawForm = () => {
   const { user } = UseAuth();
   const axiosSecure = useAxiosSecure();
-  const [coinBalance, setCoinBalance] = useState(0);
+  const navigate = useNavigate();
+
   const [coinToWithdraw, setCoinToWithdraw] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [paymentSystem, setPaymentSystem] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const navigate = useNavigate();
 
   const MIN_WITHDRAW_COIN = 200;
   const COIN_TO_DOLLAR = 20;
 
-  useEffect(() => {
-    if (user?.email) {
-      axiosSecure
-        .get(`/user/${user.email}`)
-        .then((res) => setCoinBalance(Number(res.data?.coins || 0)))
-        .catch(() => toast.error("❌ Failed to load coin balance"));
-    }
-  }, [user, axiosSecure]);
+  // 🔧 Fetch coin balance with TanStack Query
+  const {
+    data: coinBalance = 0,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["userCoinBalance", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/user/${user.email}`);
+      return Number(res.data?.coins || 0);
+    },
+  });
 
   useEffect(() => {
     setWithdrawAmount(coinToWithdraw / COIN_TO_DOLLAR);
@@ -86,9 +92,23 @@ const WithdrawForm = () => {
 
   const eligible = coinBalance >= MIN_WITHDRAW_COIN;
 
+  if (isLoading) {
+    return (
+      <p className="text-center py-10 text-gray-500 dark:text-gray-400">
+        Loading your coin balance...
+      </p>
+    );
+  }
+
+  if (error) {
+    toast.error("❌ Failed to load coin balance");
+  }
+
   return (
     <div className="max-w-lg mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">🪙 <span className="text-2xl font-bold text-primary-gradient dark:text-blue-300 text-center">Withdraw Coins</span> </h2>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">
+        🪙 <span className="text-2xl font-bold text-primary-gradient dark:text-blue-300">Withdraw Coins</span>
+      </h2>
 
       <div className="text-center text-gray-700 dark:text-gray-300">
         <p>Current Balance: <strong>{coinBalance} coins</strong></p>

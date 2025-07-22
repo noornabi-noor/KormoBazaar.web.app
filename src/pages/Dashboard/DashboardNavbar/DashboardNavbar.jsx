@@ -1,53 +1,68 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useContext, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaBell } from "react-icons/fa";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import KormoBazaarLogo from "../../shared/KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 const DashboardNavbar = () => {
   const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
 
-  const [userData, setUserData] = useState({ role: "", coins: 0 });
-  const [notifications, setNotifications] = useState([]);
+  const popupRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const popupRef = useRef(null);
+  const [lastSeenTime, setLastSeenTime] = useState(localStorage.getItem("lastSeenNotification"));
 
-  const [lastSeenTime, setLastSeenTime] = useState(
-    localStorage.getItem("lastSeenNotification")
-  );
+  // 🔄 Fetch user data
+  const {
+    data: userData = { role: "", coins: 0 },
+    isLoading: loadingUser,
+  } = useQuery({
+    queryKey: ["userData", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/user/${user.email}`);
+      return res.data;
+    },
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.email) return;
+  // 🔄 Fetch notifications
+  const {
+    data: notifications = [],
+    refetch: refetchNotifications,
+  } = useQuery({
+    queryKey: ["notifications", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/notifications?email=${user.email}`);
+      const sorted = [...res.data].sort((a, b) => new Date(b.time) - new Date(a.time));
 
-      try {
-        const userRes = await axiosSecure.get(`/user/${user.email}`);
-        setUserData(userRes.data);
+      const unseen = lastSeenTime
+        ? sorted.filter((n) => new Date(n.time) > new Date(lastSeenTime))
+        : sorted;
 
-        const notiRes = await axiosSecure.get(
-          `/notifications?email=${user.email}`
-        );
-        const sorted = [...notiRes.data].sort(
-          (a, b) => new Date(b.time) - new Date(a.time)
-        );
-        setNotifications(sorted);
+      setUnreadCount(unseen.length);
+      return sorted;
+    },
+  });
 
-        const unseen = lastSeenTime
-          ? sorted.filter((n) => new Date(n.time) > new Date(lastSeenTime))
-          : sorted;
+  // 📦 Handle bell click
+  const handleBellClick = async () => {
+    setShowPopup(true);
+    await refetchNotifications();
 
-        setUnreadCount(unseen.length);
-      } catch (err) {
-        console.error("Notification fetch error:", err);
-      }
-    };
+    if (notifications.length > 0) {
+      const latestTime = notifications[0].time;
+      localStorage.setItem("lastSeenNotification", latestTime);
+      setLastSeenTime(latestTime);
+    }
 
-    fetchData();
-  }, [user?.email, axiosSecure, lastSeenTime]);
+    setUnreadCount(0);
+  };
 
+  // ⛔ Click outside to close popup
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (popupRef.current && !popupRef.current.contains(e.target)) {
@@ -61,30 +76,6 @@ const DashboardNavbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showPopup]);
-
-  const handleBellClick = async () => {
-    setShowPopup(true);
-
-    try {
-      const notiRes = await axiosSecure.get(
-        `/notifications?email=${user.email}`
-      );
-      const sorted = [...notiRes.data].sort(
-        (a, b) => new Date(b.time) - new Date(a.time)
-      );
-      setNotifications(sorted);
-
-      // Update localStorage
-      if (sorted.length > 0) {
-        const latestTime = sorted[0].time;
-        localStorage.setItem("lastSeenNotification", latestTime);
-      }
-
-      setUnreadCount(0);
-    } catch (err) {
-      console.error("Error fetching notifications on bell click", err);
-    }
-  };
 
   const role = userData.role || "Worker";
   const coins = userData.coins || 0;
@@ -132,9 +123,7 @@ const DashboardNavbar = () => {
           ref={popupRef}
           className="absolute top-full right-6 mt-2 bg-white dark:bg-gray-900 w-96 max-h-[60vh] overflow-y-auto p-4 rounded-lg shadow-xl border dark:border-gray-700 space-y-3 z-50"
         >
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            🔔 Notifications
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🔔 Notifications</h3>
           {notifications.length > 0 ? (
             notifications.map((n, i) => (
               <Link
@@ -149,9 +138,7 @@ const DashboardNavbar = () => {
               </Link>
             ))
           ) : (
-            <p className="text-center text-gray-500 dark:text-gray-400">
-              No notifications yet
-            </p>
+            <p className="text-center text-gray-500 dark:text-gray-400">No notifications yet</p>
           )}
         </div>
       )}

@@ -1,38 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import UseAuth from "../../../hooks/UseAuth";
+import { useQuery } from "@tanstack/react-query";
 
 const WorkerHome = () => {
   const axiosSecure = useAxiosSecure();
   const { user } = UseAuth();
 
-  const [stats, setStats] = useState({
-    totalSubmissions: 0,
-    pendingCount: 0,
-    totalEarnings: 0,
+  // 🔧 Query for worker stats
+  const {
+    data: stats = { totalSubmissions: 0, pendingCount: 0, totalEarnings: 0 },
+    isLoading: statsLoading,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["workerStats", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/worker/stats?email=${user.email}`);
+      return res.data;
+    },
   });
-  const [approvedSubmissions, setApprovedSubmissions] = useState([]);
 
-  useEffect(() => {
-    if (user?.email) {
-      axiosSecure
-        .get(`/worker/stats?email=${user.email}`)
-        .then((res) => setStats(res.data))
-        .catch(() => toast.error("❌ Failed to load stats"));
+  // 🔧 Query for approved submissions
+  const {
+    data: approvedSubmissions = [],
+    isLoading: submissionsLoading,
+    error: submissionsError,
+  } = useQuery({
+    queryKey: ["approvedSubmissions", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/worker/approvedSubmissions?email=${user.email}`);
+      return res.data;
+    },
+  });
 
-      axiosSecure
-        .get(`/worker/approvedSubmissions?email=${user.email}`)
-        .then((res) => setApprovedSubmissions(res.data))
-        .catch(() => toast.error("❌ Failed to load approved submissions"));
-    }
-  }, [user, axiosSecure]);
+  // 🔔 Error handling (optional toast)
+  if (statsError || submissionsError) {
+    toast.error("❌ Failed to load worker dashboard");
+  }
+
+  // ⏳ Loading state
+  if (statsLoading || submissionsLoading) {
+    return <p className="text-center py-10 text-gray-500 dark:text-gray-400">Loading dashboard...</p>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">💼 Worker Dashboard</h2>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">💼 <span className="text-primary-gradient dark:text-blue-300">Worker Dashboard</span> </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Track your submissions and earnings</p>
       </div>
 
@@ -87,6 +105,7 @@ const StatCard = ({ label, value, color }) => {
     yellow: "bg-yellow-100 dark:bg-yellow-900",
     green: "bg-green-100 dark:bg-green-900",
   };
+
   const text = {
     blue: "text-blue-800 dark:text-blue-300",
     yellow: "text-yellow-800 dark:text-yellow-300",
