@@ -191,6 +191,20 @@ async function run() {
 
             await tasksCollection.insertOne(task);
 
+            const admins = await usersCollection.find({ role: "admin" }).toArray();
+            const notification = {
+            message: `📢 New task "${task_title}" has been added by ${buyer.name}.`,
+            actionRoute: "/dashboard/admin-home",
+            time: new Date()
+            };
+
+            for (const admin of admins) {
+            await notificationsCollection.insertOne({
+                ...notification,
+                toEmail: admin.email
+            });
+            }
+
             await usersCollection.updateOne(
             { email: buyer_email },
             { $inc: { coins: -total_payable } }
@@ -252,10 +266,6 @@ async function run() {
         try {
             const userEmail = req.query.email;
 
-            // if (req.decoded.email !== userEmail) {
-            // return res.status(403).send({ message: 'Forbidden access' });
-            // }
-
             const query = { email: userEmail };
             const options = { sort: { paid_at: -1 } };
 
@@ -267,8 +277,6 @@ async function run() {
             res.status(500).send({ message: 'Failed to get payments' });
         }
     });
-
-
 
     //POST: Record payment and update parcel status
     app.post('/payments', async (req,res)=>{
@@ -324,9 +332,6 @@ async function run() {
         res.status(500).json({error: MongoExpiredSessionError.message});
       }
     });
-
-
-
 
     app.get("/buyer/stats", async (req, res) => {
         const email = req.query.email;
@@ -481,8 +486,40 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         });
 
 
+    // app.post('/submit-task', async (req, res) => {
+    //     const submission = req.body;
+    //     try {
+    //         // Fetch worker and buyer details
+    //         const worker = await usersCollection.findOne({ email: submission.worker_email });
+    //         const buyer = await usersCollection.findOne({ email: submission.buyer_email });
+
+    //         // Construct full submission payload
+    //         const fullSubmission = {
+    //         ...submission,
+    //         worker_name: worker?.name || submission.worker_email,
+    //         buyer_name: buyer?.name || submission.buyer_email,
+    //         submittedAt: new Date()
+    //         };
+
+    //         // Insert into collection
+    //         await submissionsCollection.insertOne(fullSubmission);
+
+    //         // Decrement available workers for task
+    //         await tasksCollection.updateOne(
+    //         { _id: new ObjectId(submission.task_id) },
+    //         { $inc: { required_workers: -1 } }
+    //         );
+
+    //         res.json({ success: true, message: "Submission saved" });
+    //     } catch (error) {
+    //         console.error("Submission error:", error);
+    //         res.status(500).json({ success: false, message: "Server error" });
+    //     }
+    // });
+
     app.post('/submit-task', async (req, res) => {
         const submission = req.body;
+
         try {
             // Fetch worker and buyer details
             const worker = await usersCollection.findOne({ email: submission.worker_email });
@@ -499,13 +536,21 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             // Insert into collection
             await submissionsCollection.insertOne(fullSubmission);
 
+            // ✅ Notify buyer that a submission was received
+            await notificationsCollection.insertOne({
+            message: `${fullSubmission.worker_name} submitted "${fullSubmission.task_title}" to you.`,
+            toEmail: fullSubmission.buyer_email,
+            actionRoute: "/dashboard/buyer-home",
+            time: new Date()
+            });
+
             // Decrement available workers for task
             await tasksCollection.updateOne(
             { _id: new ObjectId(submission.task_id) },
             { $inc: { required_workers: -1 } }
             );
 
-            res.json({ success: true, message: "Submission saved" });
+            res.json({ success: true, message: "Submission saved and buyer notified" });
         } catch (error) {
             console.error("Submission error:", error);
             res.status(500).json({ success: false, message: "Server error" });
@@ -570,7 +615,6 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
     });
 
     //withdrawals tk for worker part
-
     app.get("/withdrawals", async (req, res) => {
         const email = req.query.email;
         try {
@@ -679,6 +723,13 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
 
             const result = await usersCollection.updateOne({ email }, updateDoc);
             res.send({ success: true, modifiedCount: result.modifiedCount });
+
+            await notificationsCollection.insertOne({
+                message: `Your role has been updated to '${newRole}' by admin.`,
+                toEmail: email,
+                actionRoute: "/dashboard/myProfile",
+                time: new Date()
+            });
         } catch (err) {
             console.error("Role update failed:", err);
             res.status(500).send({ success: false, message: "Server error" });
@@ -699,8 +750,22 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         const id = req.params.id;
 
         try {
+            // ✅ First, fetch the task details
+            const task = await tasksCollection.findOne({ _id: new ObjectId(id) });
+
+            if (!task) return res.status(404).send({ message: "Task not found" });
+
+            // ✅ Delete the task
             const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
+
+            // ✅ Send notification to buyer
+            await notificationsCollection.insertOne({
+            message: `Your task "${task.task_title}" was removed by an admin.`,
+            toEmail: task.buyer_email,
+            actionRoute: "/dashboard/buyer-home",
+            time: new Date()
+            });
         } catch (err) {
             console.error("Task deletion failed:", err);
             res.status(500).send({ message: "Failed to delete task" });
@@ -747,17 +812,22 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         const { email, coins } = req.body;
 
         try {
-            // Update withdrawal status
-            const withdrawalUpdate = await withdrawalCollection.updateOne(
+            await withdrawalCollection.updateOne(
             { _id: new ObjectId(id) },
             { $set: { status: "approved" } }
             );
 
-            // Decrease worker's coin balance
-            const coinUpdate = await usersCollection.updateOne(
+            await usersCollection.updateOne(
             { email },
             { $inc: { coins: -coins } }
             );
+
+            await notificationsCollection.insertOne({
+            message: `Your withdrawal request of ${coins} coins has been approved.`,
+            toEmail: email,
+            actionRoute: "/dashboard/worker-home",
+            time: new Date()
+            });
 
             res.send({ success: true });
         } catch (err) {
