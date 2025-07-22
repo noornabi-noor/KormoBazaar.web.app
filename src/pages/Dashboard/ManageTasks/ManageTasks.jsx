@@ -53,7 +53,7 @@ const ManageTasks = () => {
     <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-gray-200 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-primary-gradient dark:text-blue-300">🗂️ Manage Tasks</h2>
+        <h2 className="text-3xl font-bold ">🗂️<span className="text-primary-gradient dark:text-blue-300">Manage Tasks</span> </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-1">View and remove posted tasks</p>
       </div>
 

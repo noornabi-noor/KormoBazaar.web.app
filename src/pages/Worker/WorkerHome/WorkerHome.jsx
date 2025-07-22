@@ -63,8 +63,8 @@ const WorkerHome = () => {
 
       {/* Approved Submissions */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow border border-gray-200 dark:border-gray-700 transition">
-        <h3 className="text-xl font-semibold text-primary-gradient dark:text-blue-300 mb-4 text-center">
-          ✅ Approved Submissions
+        <h3 className="text-xl font-semibold  mb-4 text-center">
+          ✅<span className="text-primary-gradient dark:text-blue-300">Approved Submissions</span> 
         </h3>
 
         {approvedSubmissions.length ? (

@@ -79,7 +79,7 @@ const PaymentForm = () => {
 
   return (
     <div className="max-w-md mx-auto px-6 py-8 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 mt-12">
-      <h2 className="text-2xl font-bold text-primary-gradient dark:text-blue-300 text-center mb-6">💳 Complete Your Payment</h2>
+      <h2 className="text-2xl font-bold  text-center mb-6">💳<span className="text-primary-gradient dark:text-blue-300">Complete Your Payment</span> </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700 transition">
         <CardElement className="p-3 border rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100" />
