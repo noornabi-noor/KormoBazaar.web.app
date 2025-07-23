@@ -1,5 +1,6 @@
 import React from "react";
 import KormoBazaarLogo from "../KormoBazaarLogo/KormoBazaarLogo";
+import { FaGithub, FaLinkedin, FaFacebook } from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -28,15 +29,33 @@ const Footer = () => {
         {/* Social & Newsletter */}
         <div>
           <h3 className="text-xl font-semibold mb-4 text-indigo-700 dark:text-indigo-300">Stay Connected</h3>
-          <div className="flex gap-4 mb-4">
-            {["#", "#", "#"].map((link, i) => (
-              <a key={i} href={link} className="text-gray-600 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-400 transition">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="..." />
-                </svg>
-              </a>
-            ))}
+          <div className="flex gap-4 mb-4 text-2xl">
+            <a
+              href="https://github.com/noornabi-noor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-400 transition"
+            >
+              <FaGithub />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/md-noornabi-bb41442b3/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-400 transition"
+            >
+              <FaLinkedin />
+            </a>
+            <a
+              href="https://www.facebook.com/md.noornabi.noor.2024"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-400 transition"
+            >
+              <FaFacebook />
+            </a>
           </div>
+
           <form className="mt-2 flex">
             <input
               type="email"

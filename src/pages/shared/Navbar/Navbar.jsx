@@ -36,7 +36,7 @@ const Navbar = () => {
       </li>
       <li>
         <a
-          href="https://github.com/Programming-Hero-Web-Course4/b11a12-client-side-noornabi-noor.git"
+          href="https://github.com/noornabi-noor"
           target="_blank"
           rel="noopener noreferrer"
           className="text-indigo-500 border border-indigo-500 px-3 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900 transition"

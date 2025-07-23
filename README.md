@@ -6,7 +6,7 @@ This is the frontend (React) of the Micro Tasking and Earning Platform, inspired
 
 ## 🚀 Live Demo
 
-> 🔗 [Live Website](https://your-client-site.vercel.app)
+> 🔗 [Live Website](https://kormo-bazaar.web.app)
 
 ---
 
