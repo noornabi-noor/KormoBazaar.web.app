@@ -1,5 +1,5 @@
 node_modules
 .env
 .vercel
-firebase-adminsdk-fbsvc
-convertKey
+firebase-adminsdk-fbsvc.json
+convertKey.js
