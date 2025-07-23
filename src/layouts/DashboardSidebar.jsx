@@ -1,151 +1,5 @@
-// import { Link } from "react-router";
-// import {
-//   FaHome,
-//   FaUsers,
-//   FaTasks,
-//   FaCoins,
-//   FaUserCheck,
-//   FaUserCog,
-//   FaListAlt,
-//   FaFileInvoiceDollar,
-//   FaFileUpload,
-//   FaClipboardCheck,
-//   FaArrowLeft,
-// } from "react-icons/fa";
-
-// const DashboardSidebar = ({ role }) => {
-//   return (
-//     <>
-// <div className="flex items-center gap-x-2 mb-4 mt-5">
-//   <Link
-//     to="/"
-//     className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
-//   >
-//     <FaArrowLeft className="text-base" />
-//   </Link>
-//   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-//     Dashboard
-//   </h2>
-// </div>
-//       <ul className="space-y-2 text-gray-700 dark:text-gray-200">
-//         {role === "admin" && (
-//           <>
-//             <li>
-//               <Link
-//                 to="/dashboard/adminHome"
-//                 className="flex items-center gap-2 hover:text-indigo-600"
-//               >
-//                 <FaHome /> Admin Home
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/manageUsers"
-//                 className="flex items-center gap-2 hover:text-indigo-600"
-//               >
-//                 <FaUsers /> Manage Users
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/manageTasks"
-//                 className="flex items-center gap-2 hover:text-indigo-600"
-//               >
-//                 <FaTasks /> Manage Tasks
-//               </Link>
-//             </li>
-//           </>
-//         )}
-
-//         {role === "buyer" && (
-//           <>
-//             <li>
-//               <Link
-//                 to="/dashboard/buyerHome"
-//                 className="flex items-center gap-2 hover:text-green-600"
-//               >
-//                 <FaHome /> Home
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/myTasks"
-//                 className="flex items-center gap-2 hover:text-green-600"
-//               >
-//                 <FaListAlt /> My Tasks
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/addTasks"
-//                 className="flex items-center gap-2 hover:text-green-600"
-//               >
-//                 <FaFileUpload /> Add Tasks
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/purchaseCoins"
-//                 className="flex items-center gap-2 hover:text-green-600"
-//               >
-//                 <FaCoins /> Purchase Coins
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/paymentHistory"
-//                 className="flex items-center gap-2 hover:text-green-600"
-//               >
-//                 <FaFileInvoiceDollar /> Payment History
-//               </Link>
-//             </li>
-//           </>
-//         )}
-
-//         {role === "worker" && (
-//           <>
-//             <li>
-//               <Link
-//                 to="/dashboard/workerHome"
-//                 className="flex items-center gap-2 hover:text-purple-600"
-//               >
-//                 <FaHome /> Home
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/taskList"
-//                 className="flex items-center gap-2 hover:text-purple-600"
-//               >
-//                 <FaTasks /> Available Tasks
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/mySubmission"
-//                 className="flex items-center gap-2 hover:text-purple-600"
-//               >
-//                 <FaClipboardCheck /> My Submissions
-//               </Link>
-//             </li>
-//             <li>
-//               <Link
-//                 to="/dashboard/withdraw"
-//                 className="flex items-center gap-2 hover:text-purple-600"
-//               >
-//                 <FaCoins /> Withdrawals
-//               </Link>
-//             </li>
-//           </>
-//         )}
-//       </ul>
-//     </>
-//   );
-// };
-
-// export default DashboardSidebar;
-
-import { Link, NavLink } from "react-router";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
   FaHome,
   FaUsers,
@@ -155,134 +9,79 @@ import {
   FaFileInvoiceDollar,
   FaFileUpload,
   FaClipboardCheck,
-  FaArrowLeft,
 } from "react-icons/fa";
 
 const DashboardSidebar = ({ role }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="text-gray-700 dark:text-gray-200">
-      {/* Header: Back Arrow + Title */}
-      <div className="flex items-center gap-x-2 mb-4 mt-5 ml-3">
-        <Link
-          to="/"
-          className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
-        >
-          <FaArrowLeft className="text-base" />
-        </Link>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Dashboard
-        </h2>
-      </div>
+    <>
+      {/* ☰ Toggle Button for Small Screens */}
+      <button
+        className="md:hidden px-4 py-2 text-gray-600 dark:text-gray-300"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        <FaTasks className="text-xl" />
+      </button>
 
-      {/* Sidebar Links */}
-      <ul className="space-y-3">
-        {role === "admin" && (
-          <>
-            <SidebarLink
-              to="/dashboard/adminHome"
-              icon={<FaHome />}
-              label="Admin Home"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/manageUsers"
-              icon={<FaUsers />}
-              label="Manage Users"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/manageTasks"
-              icon={<FaTasks />}
-              label="Manage Tasks"
-              color="indigo"
-            />
-          </>
-        )}
+      {/* 📦 Sidebar Container */}
+      <aside
+        className={`fixed md:static top-0 left-0 h-screen z-40 bg-base-200 dark:bg-gray-900 shadow-lg overflow-y-auto transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        } w-20 md:w-64 p-3`}
+      >
+        <ul className="space-y-6 text-sm text-gray-700 dark:text-gray-200 mt-8">
+          {/* 🔐 Admin Links */}
+          {role === "admin" && (
+            <>
+              <SidebarLink to="/dashboard/adminHome" icon={<FaHome />} label="Admin Home" />
+              <SidebarLink to="/dashboard/manageUsers" icon={<FaUsers />} label="Manage Users" />
+              <SidebarLink to="/dashboard/manageTasks" icon={<FaTasks />} label="Manage Tasks" />
+            </>
+          )}
 
-        {role === "buyer" && (
-          <>
-            <SidebarLink
-              to="/dashboard/buyerHome"
-              icon={<FaHome />}
-              label="Home"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/myTasks"
-              icon={<FaListAlt />}
-              label="My Tasks"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/addTasks"
-              icon={<FaFileUpload />}
-              label="Add Tasks"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/purchaseCoins"
-              icon={<FaCoins />}
-              label="Purchase Coins"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/paymentHistory"
-              icon={<FaFileInvoiceDollar />}
-              label="Payment History"
-              color="indigo"
-            />
-          </>
-        )}
+          {/* 👤 Buyer Links */}
+          {role === "buyer" && (
+            <>
+              <SidebarLink to="/dashboard/buyerHome" icon={<FaHome />} label="Home" />
+              <SidebarLink to="/dashboard/myTasks" icon={<FaListAlt />} label="My Tasks" />
+              <SidebarLink to="/dashboard/addTasks" icon={<FaFileUpload />} label="Add Tasks" />
+              <SidebarLink to="/dashboard/purchaseCoins" icon={<FaCoins />} label="Purchase Coins" />
+              <SidebarLink to="/dashboard/paymentHistory" icon={<FaFileInvoiceDollar />} label="Payment History" />
+            </>
+          )}
 
-        {role === "worker" && (
-          <>
-            <SidebarLink
-              to="/dashboard/workerHome"
-              icon={<FaHome />}
-              label="Home"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/taskList"
-              icon={<FaTasks />}
-              label="Available Tasks"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/mySubmission"
-              icon={<FaClipboardCheck />}
-              label="My Submissions"
-              color="indigo"
-            />
-            <SidebarLink
-              to="/dashboard/withdraw"
-              icon={<FaCoins />}
-              label="Withdrawals"
-              color="indigo"
-            />
-          </>
-        )}
-      </ul>
-    </div>
+          {/* 🧑‍🔧 Worker Links */}
+          {role === "worker" && (
+            <>
+              <SidebarLink to="/dashboard/workerHome" icon={<FaHome />} label="Home" />
+              <SidebarLink to="/dashboard/taskList" icon={<FaTasks />} label="Available Tasks" />
+              <SidebarLink to="/dashboard/mySubmission" icon={<FaClipboardCheck />} label="My Submissions" />
+              <SidebarLink to="/dashboard/withdraw" icon={<FaCoins />} label="Withdrawals" />
+            </>
+          )}
+        </ul>
+      </aside>
+    </>
   );
 };
 
-/* 🔧 Reusable Link Component */
-const SidebarLink = ({ to, icon, label, color }) => {
+/* 🧩 Sidebar Link Component — Icon Only on Mobile */
+const SidebarLink = ({ to, icon, label }) => {
   return (
-    <li>
+    <li className="group">
       <NavLink
         to={to}
         className={({ isActive }) =>
-          `flex items-center gap-2 px-2 py-1 rounded transition-all ${
+          `flex items-center justify-center md:justify-start gap-3 px-2 py-2 rounded transition-all ${
             isActive
-              ? `font-bold text-${color}-600 dark:text-${color}-400`
-              : `hover:text-${color}-600 dark:hover:text-${color}-400`
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300"
+              : "hover:bg-blue-50 dark:hover:bg-gray-800"
           }`
         }
       >
-        {icon}
-        {label}
+        <span className="text-xl">{icon}</span>
+        <span className="hidden md:inline">{label}</span>
       </NavLink>
     </li>
   );

@@ -45,13 +45,9 @@ const TaskDetails = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/submit-task", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData),
-      });
+      const res = await axiosSecure.post("/submit-task", submissionData); 
+      const result = res.data;
 
-      const result = await res.json();
       if (result.success) {
         toast.success("✅ Submission successful!");
         setSubmission("");

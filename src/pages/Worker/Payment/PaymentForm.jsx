@@ -69,8 +69,8 @@ const PaymentForm = () => {
               icon: "success",
               title: "Payment Successful!",
               html: `<strong>Transaction Id:</strong> <code>${transactionId}</code><br/><strong>Coins Purchased:</strong> ${coins}`,
-              confirmButtonText: "Go to Home",
-            }).then(() => navigate("/dashboard/buyerHome"));
+              confirmButtonText: "Go to Payment History",
+            }).then(() => navigate("/dashboard/paymentHistory"));
           }
         }
       }

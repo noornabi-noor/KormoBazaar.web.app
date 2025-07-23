@@ -1,7 +1,7 @@
 // hooks/useRole.js
 import { useEffect, useState } from 'react';
-import useAxiosSecure from './useAxiosSecure';
 import UseAuth from './UseAuth';
+import useAxiosSecure from './useAxiosSecure';
 
 
 const useRole = () => {

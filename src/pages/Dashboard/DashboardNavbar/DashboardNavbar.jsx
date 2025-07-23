@@ -61,7 +61,6 @@ const DashboardNavbar = () => {
 
     setUnreadCount(0);
   };
-
   // ⛔ Click outside to close popup
   useEffect(() => {
     const handleClickOutside = (e) => {

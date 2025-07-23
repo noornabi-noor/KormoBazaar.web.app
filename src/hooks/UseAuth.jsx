@@ -7,3 +7,15 @@ const UseAuth = () => {
 };
 
 export default UseAuth;
+
+
+
+// import { useContext } from "react";
+// import { AuthContext } from "../contexts/AuthContext/AuthContext";
+
+
+// const UseAuth = () => {
+//   return useContext(AuthContext);
+// };
+
+// export default UseAuth;

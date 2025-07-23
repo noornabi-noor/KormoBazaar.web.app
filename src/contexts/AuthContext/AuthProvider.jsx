@@ -34,14 +34,14 @@ const AuthProvider = ({ children }) => {
     return signInWithPopup(auth, googleProvider);
   };
 
-  const updateUserProfile = profileInfo => {
-    return updateProfile(auth.currentUser,profileInfo);
+  const updateUserProfile = (profileInfo) => {
+    return updateProfile(auth.currentUser, profileInfo);
   };
 
   const passwordReset = (email) => {
-  setLoading(true);
-  return sendPasswordResetEmail(auth, email);
-};
+    setLoading(true);
+    return sendPasswordResetEmail(auth, email);
+  };
 
   const logOut = () => {
     setLoading(true);
@@ -74,6 +74,10 @@ const AuthProvider = ({ children }) => {
       <AuthContext value={authInfo}>{children}</AuthContext>
     </div>
   );
+
+  // return (
+  //   <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
+  // );
 };
 
 export default AuthProvider;

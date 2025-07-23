@@ -4,12 +4,14 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const imageUploadKey = import.meta.env.VITE_image_upload_key;
 
 const AddTasks = () => {
   const { user } = UseAuth();
   const navigate = useNavigate();
+  const axiosSecure = useAxiosSecure();
 
   const [formData, setFormData] = useState({
     task_title: "",
@@ -67,63 +69,61 @@ const AddTasks = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
+  try {
     const totalPay =
       Number(formData.required_workers) * Number(formData.payable_amount);
 
-    try {
-      const res = await fetch(`http://localhost:5000/user/${user.email}`);
-      const userData = await res.json();
+    // ✅ Get current user info securely
+    const res = await axiosSecure.get(`/user/${user.email}`);
+    const userData = res.data;
 
-      if (userData.coins < totalPay) {
-        alert("Not enough coins. Please purchase more.");
-        navigate("/purchase-coin");
-        return;
-      }
-
-      if (!formData.task_image) {
-        toast.error("❌ Task image is required");
-        return;
-      }
-
-      const imageUrl = await handleImageUpload(formData.task_image);
-      if (!imageUrl) return;
-
-      const taskRes = await fetch("http://localhost:5000/add-task", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buyer_email: user.email,
-          task_title: formData.task_title,
-          task_detail: formData.task_detail,
-          required_workers: Number(formData.required_workers),
-          payable_amount: Number(formData.payable_amount),
-          completion_date: formData.completion_date,
-          submission_info: formData.submission_info,
-          task_image: imageUrl,
-        }),
-      });
-
-      const result = await taskRes.json();
-
-      if (result.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Task Added 🎉",
-          text: "Your task was successfully posted!",
-          confirmButtonText: "Go to My Tasks",
-        }).then(() => {
-          navigate("/dashboard/myTasks");
-        });
-      } else {
-        toast.error("❌ " + (result.message || "Failed to add task"));
-      }
-    } catch (error) {
-      console.error("Add task error:", error);
-      toast.error("❌ Server error while submitting task");
+    if (userData.coins < totalPay) {
+      alert("Not enough coins. Please purchase more.");
+      navigate("/purchase-coin");
+      return;
     }
-  };
+
+    if (!formData.task_image) {
+      toast.error("❌ Task image is required");
+      return;
+    }
+
+    const imageUrl = await handleImageUpload(formData.task_image);
+    if (!imageUrl) return;
+
+    // ✅ Add task securely with token automatically handled
+    const taskRes = await axiosSecure.post("/add-task", {
+      buyer_email: user.email,
+      task_title: formData.task_title,
+      task_detail: formData.task_detail,
+      required_workers: Number(formData.required_workers),
+      payable_amount: Number(formData.payable_amount),
+      completion_date: formData.completion_date,
+      submission_info: formData.submission_info,
+      task_image: imageUrl,
+    });
+
+    const result = taskRes.data;
+
+    if (result.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Task Added 🎉",
+        text: "Your task was successfully posted!",
+        confirmButtonText: "Go to My Tasks",
+      }).then(() => {
+        navigate("/dashboard/myTasks");
+      });
+    } else {
+      toast.error("❌ " + (result.message || "Failed to add task"));
+    }
+  } catch (error) {
+    console.error("Add task error:", error);
+    toast.error("❌ Server error while submitting task");
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow space-y-8">

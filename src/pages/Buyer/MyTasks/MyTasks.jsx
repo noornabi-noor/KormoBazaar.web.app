@@ -13,35 +13,33 @@ const MyTasks = () => {
   const axiosSecure = useAxiosSecure();
 
   // 🔄 Query tasks
-const {
-  data: tasks = [],
-  isLoading,
-  error,
-} = useQuery({
-  queryKey: ["myTasks", user?.email],
-  enabled: !!user?.email,
-  queryFn: async () => {
-    const res = await axiosSecure.get(`/my-tasks/${user.email}`);
-    return res.data;
-  },
-});
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["myTasks", user?.email],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/my-tasks/${user.email}`);
+      return res.data;
+    },
+  });
 
   // 🔧 Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, updatedFields }) => {
-      const res = await fetch(`http://localhost:5000/update-task/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFields),
-      });
-      return res.json();
+      const res = await axiosSecure.patch(`/update-task/${id}`, updatedFields);
+      return res.data;
     },
     onSuccess: (result, variables) => {
       if (result.success) {
         toast.success("✅ Task updated!");
         queryClient.setQueryData(["myTasks", user.email], (prev) =>
           prev.map((task) =>
-            task._id === variables.id ? { ...task, ...variables.updatedFields } : task
+            task._id === variables.id
+              ? { ...task, ...variables.updatedFields }
+              : task
           )
         );
       } else {
@@ -55,18 +53,15 @@ const {
   const deleteMutation = useMutation({
     mutationFn: async ({ task, refill }) => {
       const { _id } = task;
-      const res = await fetch(`http://localhost:5000/delete-task/${_id}`, {
-        method: "DELETE",
-      });
-      const result = await res.json();
+
+      const res = await axiosSecure.delete(`/delete-task/${_id}`);
+      const result = res.data;
 
       if (!result.success) throw new Error(result.message || "Delete failed");
-
       if (refill) {
-        await fetch(`http://localhost:5000/refill-coin`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email, coins: refill }),
+        await axiosSecure.post(`/refill-coin`, {
+          email: user.email,
+          coins: refill,
         });
       }
 
@@ -93,7 +88,7 @@ const {
   };
 
   if (!user?.email || isLoading) {
-    return <span className="loading loading-spinner text-primary"></span>
+    return <span className="loading loading-spinner text-primary"></span>;
   }
 
   if (error) {
@@ -104,8 +99,15 @@ const {
     <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">
       {/* Heading */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold ">📝 <span className="text-primary-gradient dark:text-blue-300">My Tasks</span> </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and edit your posted tasks</p>
+        <h2 className="text-3xl font-bold ">
+          📝{" "}
+          <span className="text-primary-gradient dark:text-blue-300">
+            My Tasks
+          </span>{" "}
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Manage and edit your posted tasks
+        </p>
       </div>
 
       {/* Task Table */}
@@ -122,15 +124,24 @@ const {
           </thead>
           <tbody className="text-gray-700 dark:text-gray-100">
             {[...tasks]
-              .sort((a, b) => new Date(b.completion_date) - new Date(a.completion_date))
+              .sort(
+                (a, b) =>
+                  new Date(b.completion_date) - new Date(a.completion_date)
+              )
               .map((task) => (
-                <tr key={task._id} className="hover:bg-sky-50 dark:hover:bg-gray-800 transition">
+                <tr
+                  key={task._id}
+                  className="hover:bg-sky-50 dark:hover:bg-gray-800 transition"
+                >
                   <td>{task.task_title}</td>
                   <td>{task.task_detail}</td>
                   <td>{task.submission_info}</td>
                   <td>{new Date(task.completion_date).toLocaleDateString()}</td>
                   <td className="space-x-2">
-                    <button className="btn btn-sm btn-outline" onClick={() => setEditTask(task)}>
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => setEditTask(task)}
+                    >
                       Update
                     </button>
                     <button
