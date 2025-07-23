@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
+const admin = require("firebase-admin");
+
 // Load environment variables
 dotenv.config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -14,6 +16,11 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+const serviceAccount = require("./firebase-adminsdk-fbsvc.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 // MongoDB URI with environment variables
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.sltsi8p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -41,15 +48,66 @@ async function run() {
     const withdrawalCollection = db.collection("withdrawals");
     const notificationsCollection = db.collection("notifications");
 
-    app.get('/users/role/:email', async (req, res) => {
-        const email = req.params.email;
+
+    //Custom middleware
+    const verifyFBToken = async(req,res,next) => {
+        const authHeader = req.headers.authorization;
+        if(!authHeader){
+            return res.status(401).send({message: 'unauthorized access'});
+        }
+        const token = authHeader.split(' ')[1];
+        if(!token){
+            return res.status(401).send({message: 'unauthorized access'});
+        }
+        // verifyToken 
+        try{
+            const decoded = await admin.auth().verifyIdToken(token);
+            req.decoded = decoded;
+            next();
+        }catch(error){
+            return res.status(403).send({message: 'forbidden access'});
+        }
+    }
+
+    // Role checker middleware
+    const requireAdmin = async (req, res, next) => {
+        const email = req.decoded.email;
         const user = await usersCollection.findOne({ email });
-        res.send({ role: user?.role });
+
+        if (!user || user.role !== "admin") {
+            return res.status(403).send({ message: "Forbidden: Admin access only" });
+        }
+
+        next();
+    };
+
+
+   app.get('/users/role/:email', verifyFBToken, async (req, res) => {
+        const requestedEmail = req.params.email;
+        const requesterEmail = req.decoded.email;
+
+        // ✅ Validate that the requester is asking for their own role
+        if (requestedEmail !== requesterEmail) {
+            return res.status(403).json({ message: "Forbidden: Email mismatch" });
+        }
+
+        try {
+            const user = await usersCollection.findOne({ email: requestedEmail });
+            if (!user) {
+            return res.status(404).json({ message: "User not found" });
+            }
+            res.json({ role: user.role });
+        } catch (error) {
+            console.error("Role fetch error:", error);
+            res.status(500).json({ message: "Server error" });
+        }
     });
+
 
 
     //users API
     app.get('/users',async(req,res) => {
+        
         try{
             const userEmail = req.query.email;
 
@@ -108,41 +166,54 @@ async function run() {
 
 
     // ✅ Get a user by email
-    app.get('/user/:email', async (req, res) => {
-        const email = req.params.email;
+        app.get('/user/:email', verifyFBToken, async (req, res) => {
+            const requestedEmail = req.params.email;
+            const requesterEmail = req.decoded.email;
 
-        try {
-            const user = await usersCollection.findOne({ email });
-
-            if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            // ✅ Security check: only the user can request their own data
+            if (requestedEmail !== requesterEmail) {
+                return res.status(403).json({ message: "Forbidden: You can't access this user's data" });
             }
 
-            res.status(200).json(user);
-        } catch (error) {
-            console.error("Get User Error:", error);
-            res.status(500).json({ message: 'Internal server error' });
-        }
-    });
+            try {
+                const user = await usersCollection.findOne({ email: requestedEmail });
+
+                if (!user) {
+                return res.status(404).json({ message: "User not found" });
+                }
+
+                res.status(200).json(user);
+            } catch (error) {
+                console.error("Get User Error:", error);
+                res.status(500).json({ message: "Internal server error" });
+            }
+        });
+
 
 
 
     // ==============================
     // ➕ Add Task by Buyer
     // ==============================
-    app.get('/my-tasks/:email', async (req, res) => {
-        const { email } = req.params;
+   app.get('/my-tasks/:email', verifyFBToken, async (req, res) => {
+        const { email: requestedEmail } = req.params;
+        const requesterEmail = req.decoded.email;
+
+        // Security check: only allow access to own tasks
+        if (requestedEmail !== requesterEmail) {
+            return res.status(403).json({ message: "Forbidden: You can't view these tasks" });
+        }
+
         try {
-            const tasks = await tasksCollection.find({ buyer_email: email }).toArray();
+            const tasks = await tasksCollection.find({ buyer_email: requestedEmail }).toArray();
             res.send(tasks);
         } catch (err) {
             res.status(500).json({ message: "Failed to fetch tasks" });
         }
     });
 
-    app.post('/add-task', async (req, res) => {
-        try {
-            const {
+    app.post('/add-task', verifyFBToken, async (req, res) => {
+        const {
             buyer_email,
             task_title,
             task_detail,
@@ -151,8 +222,16 @@ async function run() {
             completion_date,
             submission_info,
             task_image
-            } = req.body;
+        } = req.body;
 
+        const requesterEmail = req.decoded.email;
+
+        // Security check: prevent users from impersonating buyers
+        if (buyer_email !== requesterEmail) {
+            return res.status(403).json({ success: false, message: "Forbidden: Email mismatch" });
+        }
+
+        try {
             const required = Number(required_workers);
             const payable = Number(payable_amount);
             const total_payable = required * payable;
@@ -166,13 +245,12 @@ async function run() {
             }
 
             const buyer = await usersCollection.findOne({ email: buyer_email });
-
             if (!buyer) {
-            return res.status(404).json({ success: false, message: 'Buyer not found' });
+            return res.status(404).json({ success: false, message: "Buyer not found" });
             }
 
             if (buyer.coins < total_payable) {
-            return res.status(400).json({ success: false, message: 'Not enough coins to create this task' });
+            return res.status(400).json({ success: false, message: "Not enough coins to create this task" });
             }
 
             const task = {
@@ -212,31 +290,47 @@ async function run() {
 
             res.status(201).json({
             success: true,
-            message: 'Task added and coins deducted successfully'
+            message: "Task added and coins deducted successfully"
             });
         } catch (error) {
             console.error("Add Task Error:", error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
+            res.status(500).json({ success: false, message: "Internal server error" });
         }
     });
 
-    app.post('/refill-coin', async (req, res) => {
+
+    app.post('/refill-coin', verifyFBToken, async (req, res) => {
         const { email, coins } = req.body;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).json({ success: false, message: "Forbidden: Email mismatch" });
+        }
+
         try {
-            const result = await usersCollection.updateOne({ email }, { $inc: { coins: coins } });
+            const result = await usersCollection.updateOne(
+            { email },
+            { $inc: { coins: coins } }
+            );
             res.json({ success: true, result });
         } catch (error) {
             res.status(500).json({ success: false, message: "Failed to refill coins" });
         }
     });
 
-
-    app.delete('/delete-task/:id', async (req, res) => {
+    app.delete('/delete-task/:id', verifyFBToken, async (req, res) => {
         const taskId = req.params.id;
+        const requesterEmail = req.decoded.email;
 
         try {
             const task = await tasksCollection.findOne({ _id: new ObjectId(taskId) });
-            if (!task) return res.status(404).json({ success: false, message: "Task not found" });
+            if (!task) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+            }
+
+            if (task.buyer_email !== requesterEmail) {
+            return res.status(403).json({ success: false, message: "Forbidden: You don't own this task" });
+            }
 
             await tasksCollection.deleteOne({ _id: new ObjectId(taskId) });
 
@@ -246,11 +340,24 @@ async function run() {
         }
     });
 
-    app.patch('/update-task/:id', async (req, res) => {
+
+
+
+    app.patch('/update-task/:id', verifyFBToken, async (req, res) => {
         const taskId = req.params.id;
         const updateFields = req.body;
+        const requesterEmail = req.decoded.email;
 
         try {
+            const task = await tasksCollection.findOne({ _id: new ObjectId(taskId) });
+            if (!task) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+            }
+
+            if (task.buyer_email !== requesterEmail) {
+            return res.status(403).json({ success: false, message: "Forbidden: You can't update this task" });
+            }
+
             const result = await tasksCollection.updateOne(
             { _id: new ObjectId(taskId) },
             { $set: updateFields }
@@ -262,15 +369,18 @@ async function run() {
     });
 
     // GET: Get payment history by user email
-    app.get('/payments', async (req, res) => {
+    app.get('/payments', verifyFBToken, async (req, res) => {
+        const queryEmail = req.query.email;
+        const requesterEmail = req.decoded.email;
+
+        if (queryEmail !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: You can't view these payments" });
+        }
+
         try {
-            const userEmail = req.query.email;
-
-            const query = { email: userEmail };
+            const query = { email: queryEmail };
             const options = { sort: { paid_at: -1 } };
-
             const payments = await paymentCollection.find(query, options).toArray();
-
             res.send(payments);
         } catch (error) {
             console.error('Error fetching payment history:', error);
@@ -279,16 +389,20 @@ async function run() {
     });
 
     //POST: Record payment and update parcel status
-    app.post('/payments', async (req,res)=>{
-      try{
+    app.post('/payments', verifyFBToken, async (req, res) => {
         const { email, amount, coins, paymentMethod, transactionId } = req.body;
+        const requesterEmail = req.decoded.email;
 
-        if(!email || !amount){
-            return res.status(400).send({message: 'Email and amount are required'});
+        if (email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: Email mismatch" });
         }
 
-        // 2. Insert payment record
-        const paymentDoc = {
+        if (!email || !amount) {
+            return res.status(400).send({ message: 'Email and amount are required' });
+        }
+
+        try {
+            const paymentDoc = {
             email,
             amount,
             coins,
@@ -296,24 +410,19 @@ async function run() {
             transactionId,
             paid_at_string: new Date().toISOString(),
             paid_at: new Date(),
-        };
+            };
 
-        const paymentResult = await paymentCollection.insertOne(paymentDoc);
+            const paymentResult = await paymentCollection.insertOne(paymentDoc);
+            await usersCollection.updateOne({ email }, { $inc: { coins } });
 
-        // Step 3: Increase coins in user's collection
-        const updateResult = await usersCollection.updateOne(
-            { email },
-            { $inc: { coins: coins } } 
-        );
-
-        return res.status(201).send({
-          message: 'Payment recorded and parcel marked as paid',
-          insertedId: paymentResult.insertedId,
-        });
-      }catch (error) {
-        console.error('Error processing payment:', error);
-        res.status(500).send({ message: 'Failed to process payment' });
-      }
+            res.status(201).send({
+            message: 'Payment recorded and coins updated',
+            insertedId: paymentResult.insertedId,
+            });
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            res.status(500).send({ message: 'Failed to process payment' });
+        }
     });
 
 
@@ -333,18 +442,23 @@ async function run() {
       }
     });
 
-    app.get("/buyer/stats", async (req, res) => {
-        const email = req.query.email;
-        try {
-            const tasks = await tasksCollection.find({ buyer_email: email }).toArray();
+    app.get("/buyer/stats", verifyFBToken, async (req, res) => {
+        const queryEmail = req.query.email;
+        const requesterEmail = req.decoded.email;
 
+        if (queryEmail !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: Email mismatch" });
+        }
+
+        try {
+            const tasks = await tasksCollection.find({ buyer_email: queryEmail }).toArray();
             const totalTasks = tasks.length;
             const pendingWorkers = tasks.reduce(
             (sum, task) => sum + Number(task.required_workers || 0),
             0
             );
 
-            const payments = await paymentCollection.find({ email }).toArray();
+            const payments = await paymentCollection.find({ email: queryEmail }).toArray();
             const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
             res.send({ totalTasks, pendingWorkers, totalPaid });
@@ -354,8 +468,14 @@ async function run() {
         }
     });
 
-    app.get("/buyer/pendingSubmissions", async (req, res) => {
+    app.get("/buyer/pendingSubmissions", verifyFBToken, async (req, res) => {
         const email = req.query.email;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: You can only access your own submissions" });
+        }
+
         try {
             const buyerTasks = await tasksCollection
             .find({ buyer_email: email })
@@ -384,9 +504,14 @@ async function run() {
     });
 
 
-    app.patch("/buyer/approveSubmission/:id", async (req, res) => {
+    app.patch("/buyer/approveSubmission/:id", verifyFBToken, async (req, res) => {
         const submissionId = req.params.id;
         const { workerEmail, coins, buyerName, taskTitle } = req.body;
+        const requesterEmail = req.decoded.email;
+
+        if (buyerName !== req.decoded.name && requesterEmail !== req.decoded.email) {
+            return res.status(403).send({ message: "Forbidden: You can't approve this submission" });
+        }
 
         try {
             await submissionsCollection.updateOne(
@@ -399,7 +524,6 @@ async function run() {
             { $inc: { coins: coins } }
             );
 
-            // ✅ Add notification
             await notificationsCollection.insertOne({
             message: `You have earned ${coins} coins from ${buyerName} for completing "${taskTitle}"`,
             toEmail: workerEmail,
@@ -414,38 +538,41 @@ async function run() {
         }
     });
 
+        app.patch("/buyer/rejectSubmission/:id", verifyFBToken, async (req, res) => {
+        const submissionId = req.params.id;
+        const { taskId, workerEmail, buyerName, taskTitle } = req.body;
+        const requesterEmail = req.decoded.email;
 
-app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
-  const submissionId = req.params.id;
-  const { taskId, workerEmail, buyerName, taskTitle } = req.body;
+        try {
+            const task = await tasksCollection.findOne({ _id: new ObjectId(taskId) });
 
-  try {
-    // 1. Reject the submission
-    await submissionsCollection.updateOne(
-      { _id: new ObjectId(submissionId) },
-      { $set: { status: "rejected" } }
-    );
+            if (!task || task.buyer_email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: You can't reject this submission" });
+            }
 
-    // 2. Return task slot
-    await tasksCollection.updateOne(
-      { _id: new ObjectId(taskId) },
-      { $inc: { required_workers: 1 } }
-    );
+            await submissionsCollection.updateOne(
+            { _id: new ObjectId(submissionId) },
+            { $set: { status: "rejected" } }
+            );
 
-    // 3. Create rejection notification
-    await notificationsCollection.insertOne({
-      message: `Your submission for "${taskTitle}" was rejected by ${buyerName}`,
-      toEmail: workerEmail,
-      actionRoute: "/dashboard/worker-home",
-      time: new Date()
+            await tasksCollection.updateOne(
+            { _id: new ObjectId(taskId) },
+            { $inc: { required_workers: 1 } }
+            );
+
+            await notificationsCollection.insertOne({
+            message: `Your submission for "${taskTitle}" was rejected by ${buyerName}`,
+            toEmail: workerEmail,
+            actionRoute: "/dashboard/worker-home",
+            time: new Date()
+            });
+
+            res.send({ success: true });
+        } catch (err) {
+            console.error("Reject error:", err);
+            res.status(500).send({ success: false });
+        }
     });
-
-    res.send({ success: true });
-  } catch (err) {
-    console.error("Reject error:", err);
-    res.status(500).send({ success: false });
-  }
-});
 
 
      // ==============================
@@ -485,15 +612,18 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             }
         });
 
-    app.post('/submit-task', async (req, res) => {
+        app.post('/submit-task', verifyFBToken, async (req, res) => {
         const submission = req.body;
+        const requesterEmail = req.decoded.email;
+
+        if (submission.worker_email !== requesterEmail) {
+            return res.status(403).json({ success: false, message: "Forbidden: You can't submit on behalf of another user" });
+        }
 
         try {
-            // Fetch worker and buyer details
             const worker = await usersCollection.findOne({ email: submission.worker_email });
             const buyer = await usersCollection.findOne({ email: submission.buyer_email });
 
-            // Construct full submission payload
             const fullSubmission = {
             ...submission,
             worker_name: worker?.name || submission.worker_email,
@@ -501,10 +631,8 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             submittedAt: new Date()
             };
 
-            // Insert into collection
             await submissionsCollection.insertOne(fullSubmission);
 
-            // ✅ Notify buyer that a submission was received
             await notificationsCollection.insertOne({
             message: `${fullSubmission.worker_name} submitted "${fullSubmission.task_title}" to you.`,
             toEmail: fullSubmission.buyer_email,
@@ -512,7 +640,6 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             time: new Date()
             });
 
-            // Decrement available workers for task
             await tasksCollection.updateOne(
             { _id: new ObjectId(submission.task_id) },
             { $inc: { required_workers: -1 } }
@@ -525,8 +652,14 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         }
     });
 
-    app.get('/my-submissions/:email', async (req, res) => {
+    app.get('/my-submissions/:email', verifyFBToken, async (req, res) => {
         const { email } = req.params;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).json({ message: "Forbidden: You can't view others' submissions" });
+        }
+
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
@@ -551,8 +684,14 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         }
     });
 
-    app.get("/worker/stats", async (req, res) => {
+    app.get("/worker/stats", verifyFBToken, async (req, res) => {
         const email = req.query.email;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: Stats are private" });
+        }
+
         try {
             const all = await submissionsCollection.find({ worker_email: email }).toArray();
 
@@ -569,8 +708,14 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         }
     });
 
-    app.get("/worker/approvedSubmissions", async (req, res) => {
+    app.get("/worker/approvedSubmissions", verifyFBToken, async (req, res) => {
         const email = req.query.email;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: This data is private" });
+        }
+
         try {
             const subs = await submissionsCollection
             .find({ worker_email: email, status: "approved" })
@@ -594,8 +739,14 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
     });
 
     //withdrawals tk for worker part
-    app.get("/withdrawals", async (req, res) => {
+    app.get("/withdrawals", verifyFBToken, async (req, res) => {
         const email = req.query.email;
+        const requesterEmail = req.decoded.email;
+
+        if (email !== requesterEmail) {
+            return res.status(403).send({ message: "Forbidden: You can't view others' withdrawals" });
+        }
+
         try {
             const history = await withdrawalCollection
             .find({ worker_email: email })
@@ -608,9 +759,8 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
         }
     });
 
-    app.post("/withdrawals", async (req, res) => {
-        try {
-            const {
+    app.post("/withdrawals", verifyFBToken, async (req, res) => {
+        const {
             worker_email,
             worker_name,
             withdrawal_coin,
@@ -619,12 +769,19 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             account_number,
             status,
             withdraw_date,
-            } = req.body;
+        } = req.body;
 
-            if (typeof withdrawal_coin !== "number" || withdrawal_coin < 200 || withdrawal_coin % 20 !== 0) {
+        const requesterEmail = req.decoded.email;
+
+        if (worker_email !== requesterEmail) {
+            return res.status(403).json({ message: "Forbidden: You can't withdraw from another account" });
+        }
+
+        if (typeof withdrawal_coin !== "number" || withdrawal_coin < 200 || withdrawal_coin % 20 !== 0) {
             return res.status(400).json({ message: "Minimum 200 coins required. Withdrawal must be divisible by 20." });
-            }
+        }
 
+        try {
             const worker = await usersCollection.findOne({ email: worker_email });
             if (!worker || worker.coins < withdrawal_coin) {
             return res.status(400).json({ message: "Insufficient coins" });
@@ -655,138 +812,125 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
     });
 
     //admin role play
-    app.get("/admin/searchUsers", async (req, res) => {
-        const query = req.query.query || "";
+    // 🔎 Search Users — protected for admins only
+    app.get("/admin/searchUsers", verifyFBToken, requireAdmin, async (req, res) => {
+    const query = req.query.query || "";
 
-        try {
-            const searchRegex = new RegExp(query, "i"); 
+    try {
+        const searchRegex = new RegExp(query, "i");
+        const users = await usersCollection
+        .find({ $or: [{ name: searchRegex }, { email: searchRegex }] })
+        .limit(10)
+        .toArray();
 
-            const users = await usersCollection
-            .find({
-                $or: [
-                { name: searchRegex },
-                { email: searchRegex }
-                ]
-            })
-            .limit(10)
-            .toArray();
-
-            res.send(users);
-        } catch (err) {
-            console.error("User search failed:", err);
-            res.status(500).send({ message: "Failed to fetch users" });
-        }
+        res.send(users);
+    } catch (err) {
+        console.error("User search failed:", err);
+        res.status(500).send({ message: "Failed to fetch users" });
+    }
     });
 
-    app.patch("/admin/updateUserRole/:email", async (req, res) => {
-        const email = req.params.email;
-        const newRole = req.body.role;
+    // ✏️ Update user role — protected
+    app.patch("/admin/updateUserRole/:email", verifyFBToken, requireAdmin, async (req, res) => {
+    const email = req.params.email;
+    const newRole = req.body.role;
 
-        try {
-            const user = await usersCollection.findOne({ email });
+    try {
+        const user = await usersCollection.findOne({ email });
+        if (!user) return res.status(404).send({ success: false, message: "User not found" });
 
-            if (!user) return res.status(404).send({ success: false, message: "User not found" });
+        let updateDoc = {};
 
-            let updateDoc = {};
+        if (newRole === "admin") {
+        updateDoc = { $set: { role: "admin", previousRole: user.role } };
+        } else {
+        updateDoc = {
+            $set: { role: user.previousRole || "worker" },
+            $unset: { previousRole: "" },
+        };
+        }
 
-            if (newRole === "admin") {
-            updateDoc = {
-                $set: { role: "admin", previousRole: user.role } // store old role
-            };
-            } else {
-            updateDoc = {
-                $set: { role: user.previousRole || "worker" }, // fallback to worker
-                $unset: { previousRole: "" } // cleanup
-            };
+        const result = await usersCollection.updateOne({ email }, updateDoc);
+        res.send({ success: true, modifiedCount: result.modifiedCount });
+
+        await notificationsCollection.insertOne({
+        message: `Your role has been updated to '${newRole}' by admin.`,
+        toEmail: email,
+        actionRoute: "/dashboard/myProfile",
+        time: new Date(),
+        });
+    } catch (err) {
+        console.error("Role update failed:", err);
+        res.status(500).send({ success: false, message: "Server error" });
+    }
+    });
+
+    // 📋 Admin view all tasks
+    app.get("/admin/tasks", verifyFBToken, requireAdmin, async (req, res) => {
+    try {
+        const tasks = await tasksCollection.find().sort({ createdAt: -1 }).toArray();
+        res.send(tasks);
+    } catch (err) {
+        console.error("Fetch tasks failed:", err);
+        res.status(500).send({ message: "Failed to load tasks" });
+    }
+    });
+
+    // 🗑️ Admin delete task
+    app.delete("/admin/tasks/:id", verifyFBToken, requireAdmin, async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const task = await tasksCollection.findOne({ _id: new ObjectId(id) });
+        if (!task) return res.status(404).send({ message: "Task not found" });
+
+        const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
+        res.send(result);
+
+        await notificationsCollection.insertOne({
+        message: `Your task "${task.task_title}" was removed by an admin.`,
+        toEmail: task.buyer_email,
+        actionRoute: "/dashboard/buyer-home",
+        time: new Date(),
+        });
+    } catch (err) {
+        console.error("Task deletion failed:", err);
+        res.status(500).send({ message: "Failed to delete task" });
+    }
+    });
+
+    // 📊 Admin dashboard stats
+    app.get("/admin/stats", verifyFBToken, requireAdmin, async (req, res) => {
+    try {
+        const buyers = await usersCollection.countDocuments({ role: "buyer" });
+        const workers = await usersCollection.countDocuments({ role: "worker" });
+
+        const users = await usersCollection.find().toArray();
+        const totalCoins = users.reduce((sum, user) => sum + (user.coins || 0), 0);
+
+        const payments = await paymentCollection.find().toArray();
+        const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+        res.send({ totalBuyers: buyers, totalWorkers: workers, totalCoins, totalPayments });
+    } catch (err) {
+        res.status(500).send({ message: "Stats load failed" });
+    }
+    });
+
+        app.get("/admin/pendingWithdrawals", verifyFBToken, requireAdmin, async (req, res) => {
+            try {
+                const pending = await withdrawalCollection
+                .find({ status: "pending" })
+                .sort({ withdraw_date: -1 })
+                .toArray();
+
+                res.send(pending);
+            } catch (err) {
+                res.status(500).send({ message: "Withdrawal fetch failed" });
             }
+        });
 
-            const result = await usersCollection.updateOne({ email }, updateDoc);
-            res.send({ success: true, modifiedCount: result.modifiedCount });
-
-            await notificationsCollection.insertOne({
-                message: `Your role has been updated to '${newRole}' by admin.`,
-                toEmail: email,
-                actionRoute: "/dashboard/myProfile",
-                time: new Date()
-            });
-        } catch (err) {
-            console.error("Role update failed:", err);
-            res.status(500).send({ success: false, message: "Server error" });
-        }
-    });
-
-    app.get("/admin/tasks", async (req, res) => {
-        try {
-            const tasks = await tasksCollection.find().sort({ createdAt: -1 }).toArray();
-            res.send(tasks);
-        } catch (err) {
-            console.error("Fetch tasks failed:", err);
-            res.status(500).send({ message: "Failed to load tasks" });
-        }
-    });
-
-    app.delete("/admin/tasks/:id", async (req, res) => {
-        const id = req.params.id;
-
-        try {
-            // ✅ First, fetch the task details
-            const task = await tasksCollection.findOne({ _id: new ObjectId(id) });
-
-            if (!task) return res.status(404).send({ message: "Task not found" });
-
-            // ✅ Delete the task
-            const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
-            res.send(result);
-
-            // ✅ Send notification to buyer
-            await notificationsCollection.insertOne({
-            message: `Your task "${task.task_title}" was removed by an admin.`,
-            toEmail: task.buyer_email,
-            actionRoute: "/dashboard/buyer-home",
-            time: new Date()
-            });
-        } catch (err) {
-            console.error("Task deletion failed:", err);
-            res.status(500).send({ message: "Failed to delete task" });
-        }
-    });
-
-    app.get("/admin/stats", async (req, res) => {
-        try {
-            const buyers = await usersCollection.countDocuments({ role: "buyer" });
-            const workers = await usersCollection.countDocuments({ role: "worker" });
-
-            const users = await usersCollection.find().toArray();
-            const totalCoins = users.reduce((sum, user) => sum + (user.coins || 0), 0);
-
-            const payments = await paymentCollection.find().toArray(); // assuming this exists
-            const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-
-            res.send({
-            totalBuyers: buyers,
-            totalWorkers: workers,
-            totalCoins,
-            totalPayments,
-            });
-        } catch (err) {
-            res.status(500).send({ message: "Stats load failed" });
-        }
-    });
-
-    app.get("/admin/pendingWithdrawals", async (req, res) => {
-        try {
-            const pending = await withdrawalCollection
-            .find({ status: "pending" })
-            .sort({ withdraw_date: -1 })
-            .toArray();
-
-            res.send(pending);
-        } catch (err) {
-            res.status(500).send({ message: "Withdrawal fetch failed" });
-        }
-    });
-
-    app.patch("/admin/approveWithdrawal/:id", async (req, res) => {
+    app.patch("/admin/approveWithdrawal/:id", verifyFBToken, requireAdmin, async (req, res) => {
         const id = req.params.id;
         const { email, coins } = req.body;
 
@@ -814,7 +958,6 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             res.status(500).send({ success: false, message: "Approval failed" });
         }
     });
-
 
     //top workers
     app.get("/top-workers", async (req, res) => {
@@ -861,12 +1004,13 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
 
     //Notification
     // routes/notifications.js (or inline in server file)
-        app.post("/notifications", async (req, res) => {
+        app.post("/notifications", verifyFBToken, async (req, res) => {
             const notification = req.body;
+
             try {
                 const result = await notificationsCollection.insertOne({
                 ...notification,
-                time: new Date(), // Ensure timestamp
+                time: new Date()
                 });
                 res.send({ success: true, insertedId: result.insertedId });
             } catch (err) {
@@ -874,16 +1018,29 @@ app.patch("/buyer/rejectSubmission/:id", async (req, res) => {
             }
         });
 
-        app.get("/notifications", async (req, res) => {
+        app.get("/notifications", verifyFBToken, async (req, res) => {
             const email = req.query.email;
-            if (!email) return res.status(400).send({ success: false, message: "Email required" });
+            const requesterEmail = req.decoded.email;
 
-            const notifications = await notificationsCollection
+            if (!email) {
+                return res.status(400).send({ success: false, message: "Email required" });
+            }
+
+            if (email !== requesterEmail) {
+                return res.status(403).send({ success: false, message: "Forbidden: Cannot view others' notifications" });
+            }
+
+            try {
+                const notifications = await notificationsCollection
                 .find({ toEmail: email })
-                .sort({ time: -1 }) // Most recent first
+                .sort({ time: -1 })
                 .toArray();
 
-            res.send(notifications);
+                res.send(notifications);
+            } catch (err) {
+                console.error("Notifications fetch error:", err);
+                res.status(500).send({ message: "Failed to load notifications" });
+            }
         });
 
 
