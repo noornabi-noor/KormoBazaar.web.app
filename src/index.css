@@ -55,7 +55,7 @@
   }
 
   .navbar-theme {
-    @apply bg-gradient-to-tr from-indigo-50 via-blue-100 to-sky-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 shadow-md rounded-2xl;
+    @apply bg-gradient-to-tr from-indigo-50 via-blue-100 to-sky-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 shadow-md rounded-xl;
   }
 
   /* Table header and body cells */

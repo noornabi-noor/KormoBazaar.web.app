@@ -12,7 +12,6 @@ const MyTasks = () => {
   const [editTask, setEditTask] = useState(null);
   const axiosSecure = useAxiosSecure();
 
-  // 🔄 Query tasks
   const {
     data: tasks = [],
     isLoading,
@@ -26,7 +25,6 @@ const MyTasks = () => {
     },
   });
 
-  // 🔧 Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, updatedFields }) => {
       const res = await axiosSecure.patch(`/update-task/${id}`, updatedFields);
@@ -49,7 +47,6 @@ const MyTasks = () => {
     onError: () => toast.error("Server error"),
   });
 
-  // 🔧 Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async ({ task, refill }) => {
       const { _id } = task;
@@ -88,7 +85,11 @@ const MyTasks = () => {
   };
 
   if (!user?.email || isLoading) {
-    return <span className="loading loading-spinner text-primary"></span>;
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
   }
 
   if (error) {
@@ -96,71 +97,122 @@ const MyTasks = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-lg md:rounded-2xl shadow transition-colors duration-300 space-y-6 md:space-y-8">
       {/* Heading */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold ">
+      <div className="text-center px-2">
+        <h2 className="text-2xl sm:text-3xl font-bold">
           📝{" "}
           <span className="text-primary-gradient dark:text-blue-300">
             My Tasks
-          </span>{" "}
+          </span>
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
           Manage and edit your posted tasks
         </p>
       </div>
 
-      {/* Task Table */}
+      {/* Task List */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-        <table className="table w-full text-sm">
-          <thead className="bg-blue-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-            <tr>
-              <th>Title</th>
-              <th>Detail</th>
-              <th>Submission</th>
-              <th>Deadline</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-700 dark:text-gray-100">
-            {[...tasks]
-              .sort(
-                (a, b) =>
-                  new Date(b.completion_date) - new Date(a.completion_date)
-              )
-              .map((task) => (
-                <tr
-                  key={task._id}
-                  className="hover:bg-sky-50 dark:hover:bg-gray-800 transition"
-                >
-                  <td>{task.task_title}</td>
-                  <td>{task.task_detail}</td>
-                  <td>{task.submission_info}</td>
-                  <td>{new Date(task.completion_date).toLocaleDateString()}</td>
-                  <td className="space-x-2">
+        {/* Desktop Table */}
+        <div className="hidden sm:block">
+          <table className="table w-full text-sm">
+            <thead className="bg-blue-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+              <tr>
+                <th>Title</th>
+                <th>Detail</th>
+                <th>Submission</th>
+                <th>Deadline</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700 dark:text-gray-100">
+              {[...tasks]
+                .sort(
+                  (a, b) =>
+                    new Date(b.completion_date) - new Date(a.completion_date)
+                )
+                .map((task) => (
+                  <tr
+                    key={task._id}
+                    className="hover:bg-sky-50 dark:hover:bg-gray-800 transition"
+                  >
+                    <td className="max-w-[150px] truncate">{task.task_title}</td>
+                    <td className="max-w-[200px] truncate">{task.task_detail}</td>
+                    <td className="max-w-[150px] truncate">{task.submission_info}</td>
+                    <td>{new Date(task.completion_date).toLocaleDateString()}</td>
+                    <td className="space-x-2">
+                      <button
+                        className="btn btn-xs sm:btn-sm btn-outline"
+                        onClick={() => setEditTask(task)}
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="btn btn-xs sm:btn-sm btn-error"
+                        onClick={() => handleDelete(task)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="sm:hidden space-y-3 p-3">
+          {[...tasks]
+            .sort(
+              (a, b) =>
+                new Date(b.completion_date) - new Date(a.completion_date)
+            )
+            .map((task) => (
+              <div
+                key={task._id}
+                className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-gray-800 dark:text-gray-200">
+                      {task.task_title}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Due: {new Date(task.completion_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
                     <button
-                      className="btn btn-sm btn-outline"
+                      className="btn btn-xs btn-outline"
                       onClick={() => setEditTask(task)}
                     >
-                      Update
+                      Edit
                     </button>
                     <button
-                      className="btn btn-sm btn-error"
+                      className="btn btn-xs btn-error"
                       onClick={() => handleDelete(task)}
                     >
                       Delete
                     </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs">
+                  <p className="text-gray-600 dark:text-gray-400 truncate">
+                    <span className="font-medium">Details:</span> {task.task_detail}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 truncate">
+                    <span className="font-medium">Submission:</span> {task.submission_info}
+                  </p>
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
 
       {/* Update Task Modal */}
       {editTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg max-w-md w-full text-gray-800 dark:text-gray-100">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg sm:rounded-2xl shadow-lg max-w-md w-full text-gray-800 dark:text-gray-100">
             <UpdateTaskForm
               task={editTask}
               onUpdate={handleUpdate}

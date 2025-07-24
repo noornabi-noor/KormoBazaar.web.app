@@ -84,7 +84,7 @@ const DashboardNavbar = () => {
   const coins = userData.coins || 0;
 
   return (
-    <div className="navbar flex justify-between px-6 py-4 navbar-theme border-b border-gray-200 dark:border-gray-700 relative z-10">
+    <div className="navbar flex justify-between px-4 py-2 navbar-theme border-b border-gray-200 dark:border-gray-700 relative z-10">
       {/* Branding */}
       <Link to="/" className="flex items-center gap-2">
         <KormoBazaarLogo />
@@ -92,10 +92,10 @@ const DashboardNavbar = () => {
 
       {/* Info + Actions */}
       <div className="flex items-center gap-4 text-sm">
-        <div className="text-gray-700 dark:text-gray-300">
+        <div className="text-gray-700 dark:text-gray-300 hidden lg:flex">
           🪙 Coins: <strong>{coins.toLocaleString()}</strong>
         </div>
-        <div className="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded font-semibold text-blue-800 dark:text-blue-200">
+        <div className="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded font-semibold text-blue-800 dark:text-blue-200 hidden lg:flex">
           Role: {role}
         </div>
 
@@ -105,7 +105,7 @@ const DashboardNavbar = () => {
             alt="Avatar"
             className="w-8 h-8 rounded-full border border-blue-400 dark:border-blue-600 object-cover"
           />
-          <span className="text-gray-800 dark:text-gray-200 font-medium">
+          <span className="text-gray-800 dark:text-gray-200 font-medium hidden lg:flex">
             {user?.displayName || "User"}
           </span>
         </Link>

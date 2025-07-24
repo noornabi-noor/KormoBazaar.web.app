@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import UseAuth from "../../../hooks/UseAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +26,6 @@ const TaskDetails = () => {
     },
   });
 
-  // 🔔 Submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -45,7 +44,7 @@ const TaskDetails = () => {
     };
 
     try {
-      const res = await axiosSecure.post("/submit-task", submissionData); 
+      const res = await axiosSecure.post("/submit-task", submissionData);
       const result = res.data;
 
       if (result.success) {
@@ -63,12 +62,14 @@ const TaskDetails = () => {
     }
   };
 
-  // ⏳ Loading state
   if (isLoading) {
-    return <span className="loading loading-spinner text-primary"></span>;
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
   }
 
-  // ❌ Error state
   if (error || !task) {
     return (
       <p className="text-center py-6 text-red-500 dark:text-red-400">
@@ -78,33 +79,31 @@ const TaskDetails = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow transition-colors duration-300 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-lg md:rounded-2xl shadow transition-colors duration-300 space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-blue-600 dark:text-blue-300">
+      <div className="text-center px-2">
+        <h2 className="text-xl sm:text-2xl font-semibold text-blue-600 dark:text-blue-300">
           📋 {task.task_title}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
           Read the task and submit your work below
         </p>
       </div>
 
       {/* Task Info */}
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-6 text-gray-800 dark:text-gray-100 max-w-4xl mx-auto">
-          {/* ✅ Hero Image */}
-          <div className="flex justify-center">
-            <div className="aspect-square w-full max-w-sm overflow-hidden rounded-lg border shadow">
-              <img
-                src={task.task_image}
-                alt="Task"
-                className="w-full h-full object-cover"
-              />
-            </div>
+      <div className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg md:rounded-xl shadow border border-gray-200 dark:border-gray-700 space-y-4 sm:space-y-6 text-gray-800 dark:text-gray-100">
+        {/* Hero Image */}
+        <div className="flex justify-center">
+          <div className="aspect-square w-full max-w-xs sm:max-w-sm overflow-hidden rounded-lg border shadow">
+            <img
+              src={task.task_image}
+              alt="Task"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 
-        {/* ✅ Main Info */}
+        {/* Main Info */}
         <div className="space-y-2">
           <p className="text-gray-700 dark:text-gray-300">
             <strong className="text-blue-500 dark:text-blue-400">
@@ -114,8 +113,8 @@ const TaskDetails = () => {
           </p>
         </div>
 
-        {/* ✅ Pay & Requirement */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        {/* Pay & Requirement */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
           <p>
             <strong>💰 Pay:</strong> ${task.payable_amount}
           </p>
@@ -128,8 +127,8 @@ const TaskDetails = () => {
           </p>
         </div>
 
-        {/* ✅ Buyer Info */}
-        <div className="border-t border-gray-200 dark:border-gray-600 pt-4 text-sm space-y-1">
+        {/* Buyer Info */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-3 sm:pt-4 text-xs sm:text-sm space-y-1">
           <p>
             <strong>👤 Buyer Name:</strong> {task.buyer_name}
           </p>
@@ -140,10 +139,10 @@ const TaskDetails = () => {
       </div>
 
       {/* Submission Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 px-2 sm:px-0">
         <label
           htmlFor="submission"
-          className="block text-lg font-medium text-gray-800 dark:text-white"
+          className="block text-base sm:text-lg font-medium text-gray-800 dark:text-white"
         >
           Your Submission
         </label>
@@ -152,9 +151,12 @@ const TaskDetails = () => {
           onChange={(e) => setSubmission(e.target.value)}
           required
           placeholder="Your submission details..."
-          className="textarea textarea-bordered w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
+          className="textarea textarea-bordered w-full h-32 sm:h-40 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
         />
-        <button type="submit" className="btn btn-primary w-full">
+        <button 
+          type="submit" 
+          className="btn btn-primary w-full text-sm sm:text-base"
+        >
           Submit Task
         </button>
       </form>

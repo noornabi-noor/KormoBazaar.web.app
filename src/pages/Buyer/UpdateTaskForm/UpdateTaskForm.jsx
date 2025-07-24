@@ -25,14 +25,16 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-2xl p-6 shadow-lg transition-colors duration-300 max-w-lg w-full"
+      className="space-y-4 sm:space-y-6 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg transition-colors duration-300 w-full max-w-md sm:max-w-lg mx-2 sm:mx-0"
     >
       {/* Heading */}
-      <h2 className="text-2xl font-bold text-center ">✏️ <span className="text-primary-gradient dark:text-blue-300">Update Task</span></h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-center">
+        ✏️ <span className="text-primary-gradient dark:text-blue-300">Update Task</span>
+      </h2>
 
       {/* Title */}
       <div>
-        <label htmlFor="task_title" className="block mb-1 font-medium">
+        <label htmlFor="task_title" className="block mb-1 text-sm sm:text-base font-medium">
           Task Title
         </label>
         <input
@@ -42,13 +44,13 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
           onChange={handleChange}
           required
           placeholder="Task Title"
-          className="input input-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
+          className="input input-bordered w-full text-sm sm:text-base bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
 
       {/* Detail */}
       <div>
-        <label htmlFor="task_detail" className="block mb-1 font-medium">
+        <label htmlFor="task_detail" className="block mb-1 text-sm sm:text-base font-medium">
           Task Detail
         </label>
         <textarea
@@ -56,14 +58,15 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
           value={formData.task_detail}
           onChange={handleChange}
           required
+          rows={4}
           placeholder="Task Detail"
-          className="textarea textarea-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
+          className="textarea textarea-bordered w-full text-sm sm:text-base bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
         ></textarea>
       </div>
 
       {/* Submission Info */}
       <div>
-        <label htmlFor="submission_info" className="block mb-1 font-medium">
+        <label htmlFor="submission_info" className="block mb-1 text-sm sm:text-base font-medium">
           Submission Info
         </label>
         <input
@@ -73,13 +76,13 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
           onChange={handleChange}
           required
           placeholder="Screenshot Requirement or Similar"
-          className="input input-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
+          className="input input-bordered w-full text-sm sm:text-base bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
 
       {/* Image URL */}
       <div>
-        <label htmlFor="task_image" className="block mb-1 font-medium">
+        <label htmlFor="task_image" className="block mb-1 text-sm sm:text-base font-medium">
           Task Image URL
         </label>
         <input
@@ -89,16 +92,23 @@ const UpdateTaskForm = ({ task, onUpdate, onClose }) => {
           onChange={handleChange}
           required
           placeholder="https://example.com/image.jpg"
-          className="input input-bordered w-full bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
+          className="input input-bordered w-full text-sm sm:text-base bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-4 pt-2">
-        <button type="submit" className="btn btn-sm btn-primary">
-          Save
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 pt-2">
+        <button 
+          type="submit" 
+          className="btn btn-sm sm:btn-md btn-primary w-full sm:w-auto"
+        >
+          Save Changes
         </button>
-        <button type="button" className="btn btn-sm btn-outline" onClick={onClose}>
+        <button 
+          type="button" 
+          className="btn btn-sm sm:btn-md btn-outline w-full sm:w-auto" 
+          onClick={onClose}
+        >
           Cancel
         </button>
       </div>
