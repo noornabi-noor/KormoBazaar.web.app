@@ -154,7 +154,7 @@ const TaskDetails = () => {
           placeholder="Your submission details..."
           className="textarea textarea-bordered w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
         />
-        <button type="submit" className="btn btn-success w-full">
+        <button type="submit" className="btn btn-primary w-full">
           Submit Task
         </button>
       </form>

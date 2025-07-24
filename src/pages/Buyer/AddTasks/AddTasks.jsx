@@ -81,7 +81,7 @@ const AddTasks = () => {
 
     if (userData.coins < totalPay) {
       alert("Not enough coins. Please purchase more.");
-      navigate("/purchase-coin");
+      navigate("/dashboard/purchaseCoins");
       return;
     }
 

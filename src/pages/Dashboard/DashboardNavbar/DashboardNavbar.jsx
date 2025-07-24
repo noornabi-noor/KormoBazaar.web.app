@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { FaBell } from "react-icons/fa";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import KormoBazaarLogo from "../../shared/KormoBazaarLogo/KormoBazaarLogo";
@@ -15,7 +15,7 @@ const DashboardNavbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [lastSeenTime, setLastSeenTime] = useState(localStorage.getItem("lastSeenNotification"));
 
-  // 🔄 Fetch user data
+  // 🔄 Fetch user stats
   const {
     data: userData = { role: "", coins: 0 },
     isLoading: loadingUser,
@@ -28,7 +28,7 @@ const DashboardNavbar = () => {
     },
   });
 
-  // 🔄 Fetch notifications
+  // 🔔 Fetch notifications
   const {
     data: notifications = [],
     refetch: refetchNotifications,
@@ -37,16 +37,19 @@ const DashboardNavbar = () => {
     enabled: !!user?.email,
     queryFn: async () => {
       const res = await axiosSecure.get(`/notifications?email=${user.email}`);
-      const sorted = [...res.data].sort((a, b) => new Date(b.time) - new Date(a.time));
-
-      const unseen = lastSeenTime
-        ? sorted.filter((n) => new Date(n.time) > new Date(lastSeenTime))
-        : sorted;
-
-      setUnreadCount(unseen.length);
-      return sorted;
+      return [...res.data].sort((a, b) => new Date(b.time) - new Date(a.time));
     },
   });
+
+  // 🧠 Calculate unread notifications when data changes
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const unseen = lastSeenTime
+        ? notifications.filter(n => new Date(n.time) > new Date(lastSeenTime))
+        : notifications;
+      setUnreadCount(unseen.length);
+    }
+  }, [notifications, lastSeenTime]);
 
   // 📦 Handle bell click
   const handleBellClick = async () => {
@@ -61,6 +64,7 @@ const DashboardNavbar = () => {
 
     setUnreadCount(0);
   };
+
   // ⛔ Click outside to close popup
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -81,10 +85,12 @@ const DashboardNavbar = () => {
 
   return (
     <div className="navbar flex justify-between px-6 py-4 navbar-theme border-b border-gray-200 dark:border-gray-700 relative z-10">
+      {/* Branding */}
       <Link to="/" className="flex items-center gap-2">
         <KormoBazaarLogo />
       </Link>
 
+      {/* Info + Actions */}
       <div className="flex items-center gap-4 text-sm">
         <div className="text-gray-700 dark:text-gray-300">
           🪙 Coins: <strong>{coins.toLocaleString()}</strong>
@@ -97,13 +103,14 @@ const DashboardNavbar = () => {
           <img
             src={user?.photoURL || "/default-avatar.png"}
             alt="Avatar"
-            className="w-8 h-8 rounded-full border border-blue-400 dark:border-blue-600"
+            className="w-8 h-8 rounded-full border border-blue-400 dark:border-blue-600 object-cover"
           />
           <span className="text-gray-800 dark:text-gray-200 font-medium">
             {user?.displayName || "User"}
           </span>
         </Link>
 
+        {/* 🔔 Notification Bell */}
         <button
           onClick={handleBellClick}
           className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -117,6 +124,7 @@ const DashboardNavbar = () => {
         </button>
       </div>
 
+      {/* 📬 Notification Popup */}
       {showPopup && (
         <div
           ref={popupRef}

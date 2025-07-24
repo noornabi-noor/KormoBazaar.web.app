@@ -111,7 +111,7 @@ const handleLogout = async () => {
                 <div className="flex justify-center gap-4 pt-4">
                   <button
                     onClick={() => setEditMode(true)}
-                    className="btn btn-sm btn-secondary"
+                    className="btn btn-sm btn-primary"
                   >
                     Edit Profile
                   </button>

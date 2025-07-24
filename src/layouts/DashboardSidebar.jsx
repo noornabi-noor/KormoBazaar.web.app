@@ -9,6 +9,7 @@ import {
   FaFileInvoiceDollar,
   FaFileUpload,
   FaClipboardCheck,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const DashboardSidebar = ({ role }) => {
@@ -30,34 +31,96 @@ const DashboardSidebar = ({ role }) => {
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } w-20 md:w-64 p-3`}
       >
-        <ul className="space-y-6 text-sm text-gray-700 dark:text-gray-200 mt-8">
+        {/* 🔝 Top Bar with Back Arrow Icon and Title */}
+        <div className="flex items-center gap-2 mb-6 px-2 md:px-0">
+          <NavLink
+            to="/"
+            className="text-xl text-gray-700 dark:text-gray-200 hover:text-blue-600"
+          >
+            <FaArrowLeft />
+          </NavLink>
+          <span className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden md:inline">
+            Dashboard
+          </span>
+        </div>
+
+        {/* 📋 Sidebar Links */}
+        <ul className="space-y-6 text-sm text-gray-700 dark:text-gray-200 mt-2">
           {/* 🔐 Admin Links */}
           {role === "admin" && (
             <>
-              <SidebarLink to="/dashboard/adminHome" icon={<FaHome />} label="Admin Home" />
-              <SidebarLink to="/dashboard/manageUsers" icon={<FaUsers />} label="Manage Users" />
-              <SidebarLink to="/dashboard/manageTasks" icon={<FaTasks />} label="Manage Tasks" />
+              <SidebarLink
+                to="/dashboard/adminHome"
+                icon={<FaHome />}
+                label="Admin Home"
+              />
+              <SidebarLink
+                to="/dashboard/manageUsers"
+                icon={<FaUsers />}
+                label="Manage Users"
+              />
+              <SidebarLink
+                to="/dashboard/manageTasks"
+                icon={<FaTasks />}
+                label="Manage Tasks"
+              />
             </>
           )}
 
           {/* 👤 Buyer Links */}
           {role === "buyer" && (
             <>
-              <SidebarLink to="/dashboard/buyerHome" icon={<FaHome />} label="Home" />
-              <SidebarLink to="/dashboard/myTasks" icon={<FaListAlt />} label="My Tasks" />
-              <SidebarLink to="/dashboard/addTasks" icon={<FaFileUpload />} label="Add Tasks" />
-              <SidebarLink to="/dashboard/purchaseCoins" icon={<FaCoins />} label="Purchase Coins" />
-              <SidebarLink to="/dashboard/paymentHistory" icon={<FaFileInvoiceDollar />} label="Payment History" />
+              <SidebarLink
+                to="/dashboard/buyerHome"
+                icon={<FaHome />}
+                label="Home"
+              />
+              <SidebarLink
+                to="/dashboard/myTasks"
+                icon={<FaListAlt />}
+                label="My Tasks"
+              />
+              <SidebarLink
+                to="/dashboard/addTasks"
+                icon={<FaFileUpload />}
+                label="Add Tasks"
+              />
+              <SidebarLink
+                to="/dashboard/purchaseCoins"
+                icon={<FaCoins />}
+                label="Purchase Coins"
+              />
+              <SidebarLink
+                to="/dashboard/paymentHistory"
+                icon={<FaFileInvoiceDollar />}
+                label="Payment History"
+              />
             </>
           )}
 
           {/* 🧑‍🔧 Worker Links */}
           {role === "worker" && (
             <>
-              <SidebarLink to="/dashboard/workerHome" icon={<FaHome />} label="Home" />
-              <SidebarLink to="/dashboard/taskList" icon={<FaTasks />} label="Available Tasks" />
-              <SidebarLink to="/dashboard/mySubmission" icon={<FaClipboardCheck />} label="My Submissions" />
-              <SidebarLink to="/dashboard/withdraw" icon={<FaCoins />} label="Withdrawals" />
+              <SidebarLink
+                to="/dashboard/workerHome"
+                icon={<FaHome />}
+                label="Home"
+              />
+              <SidebarLink
+                to="/dashboard/taskList"
+                icon={<FaTasks />}
+                label="Available Tasks"
+              />
+              <SidebarLink
+                to="/dashboard/mySubmission"
+                icon={<FaClipboardCheck />}
+                label="My Submissions"
+              />
+              <SidebarLink
+                to="/dashboard/withdraw"
+                icon={<FaCoins />}
+                label="Withdrawals"
+              />
             </>
           )}
         </ul>
