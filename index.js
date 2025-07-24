@@ -981,19 +981,12 @@ async function run() {
     app.get("/platform-stats", async (req, res) => {
         try {
             const users = await usersCollection.countDocuments();
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-
-            const tasksCompletedToday = await submissionsCollection.countDocuments({
-            submit_date: { $gte: todayStart }
-            });
 
             const userList = await usersCollection.find().toArray();
             const totalCoins = userList.reduce((sum, u) => sum + (u.coins || 0), 0);
 
             res.send({
             users,
-            tasksToday: tasksCompletedToday,
             totalCoins
             });
         } catch (err) {
@@ -1001,7 +994,6 @@ async function run() {
             res.status(500).send({ message: "Failed to fetch stats" });
         }
     });
-
 
     //Notification
     // routes/notifications.js (or inline in server file)
