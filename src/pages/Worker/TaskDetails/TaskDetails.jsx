@@ -94,11 +94,11 @@ const TaskDetails = () => {
       <div className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg md:rounded-xl shadow border border-gray-200 dark:border-gray-700 space-y-4 sm:space-y-6 text-gray-800 dark:text-gray-100">
         {/* Hero Image */}
         <div className="flex justify-center">
-          <div className="aspect-square w-full max-w-xs sm:max-w-sm overflow-hidden rounded-lg border shadow">
+          <div className="w-full max-w-sm overflow-hidden rounded-lg border shadow">
             <img
               src={task.task_image}
               alt="Task"
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-contain"
             />
           </div>
         </div>
@@ -139,7 +139,10 @@ const TaskDetails = () => {
       </div>
 
       {/* Submission Form */}
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 px-2 sm:px-0">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-3 sm:space-y-4 px-2 sm:px-0"
+      >
         <label
           htmlFor="submission"
           className="block text-base sm:text-lg font-medium text-gray-800 dark:text-white"
@@ -153,8 +156,8 @@ const TaskDetails = () => {
           placeholder="Your submission details..."
           className="textarea textarea-bordered w-full h-32 sm:h-40 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="btn btn-primary w-full text-sm sm:text-base"
         >
           Submit Task
