@@ -1,38 +1,49 @@
-import React, { useContext, useRef, useState, useEffect } from "react";
-import { Link } from "react-router";
+import React, { useContext, useRef, useState, useEffect, use } from "react";
+import { Link, useNavigate } from "react-router";
 import { FaBell } from "react-icons/fa";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import KormoBazaarLogo from "../../shared/KormoBazaarLogo/KormoBazaarLogo";
 import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+
 
 const DashboardNavbar = () => {
-  const { user } = useContext(AuthContext);
+  const { user, logOut } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      toast.success("✅ Logged out successfully");
+      setTimeout(() => navigate("/"), 100);
+    } catch (err) {
+      toast.error(`❌ ${err.message}`);
+    }
+  };
+
 
   const popupRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [lastSeenTime, setLastSeenTime] = useState(localStorage.getItem("lastSeenNotification"));
+  const [lastSeenTime, setLastSeenTime] = useState(
+    localStorage.getItem("lastSeenNotification")
+  );
 
   // 🔄 Fetch user stats
-  const {
-    data: userData = { role: "", coins: 0 },
-    isLoading: loadingUser,
-  } = useQuery({
-    queryKey: ["userData", user?.email],
-    enabled: !!user?.email,
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/user/${user.email}`);
-      return res.data;
-    },
-  });
+  const { data: userData = { role: "", coins: 0 }, isLoading: loadingUser } =
+    useQuery({
+      queryKey: ["userData", user?.email],
+      enabled: !!user?.email,
+      queryFn: async () => {
+        const res = await axiosSecure.get(`/user/${user.email}`);
+        return res.data;
+      },
+    });
 
   // 🔔 Fetch notifications
-  const {
-    data: notifications = [],
-    refetch: refetchNotifications,
-  } = useQuery({
+  const { data: notifications = [], refetch: refetchNotifications } = useQuery({
     queryKey: ["notifications", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
@@ -45,7 +56,7 @@ const DashboardNavbar = () => {
   useEffect(() => {
     if (notifications.length > 0) {
       const unseen = lastSeenTime
-        ? notifications.filter(n => new Date(n.time) > new Date(lastSeenTime))
+        ? notifications.filter((n) => new Date(n.time) > new Date(lastSeenTime))
         : notifications;
       setUnreadCount(unseen.length);
     }
@@ -92,6 +103,14 @@ const DashboardNavbar = () => {
 
       {/* Info + Actions */}
       <div className="flex items-center gap-4 text-sm">
+        <a
+          href="https://github.com/noornabi-noor"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-500 border border-indigo-500 px-3 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900 transition"
+        >
+          Join as Developer
+        </a>
         <div className="text-gray-700 dark:text-gray-300 hidden lg:flex">
           🪙 Coins: <strong>{coins.toLocaleString()}</strong>
         </div>
@@ -105,10 +124,14 @@ const DashboardNavbar = () => {
             alt="Avatar"
             className="w-8 h-8 rounded-full border border-blue-400 dark:border-blue-600 object-cover"
           />
-          <span className="text-gray-800 dark:text-gray-200 font-medium hidden lg:flex">
+          {/* <span className="text-gray-800 dark:text-gray-200 font-medium hidden lg:flex">
             {user?.displayName || "User"}
-          </span>
+          </span> */}
         </Link>
+
+        <button onClick={handleLogout} className="btn btn-sm btn-primary">
+          Logout
+        </button>
 
         {/* 🔔 Notification Bell */}
         <button
@@ -130,7 +153,9 @@ const DashboardNavbar = () => {
           ref={popupRef}
           className="absolute top-full right-6 mt-2 bg-white dark:bg-gray-900 w-96 max-h-[60vh] overflow-y-auto p-4 rounded-lg shadow-xl border dark:border-gray-700 space-y-3 z-50"
         >
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🔔 Notifications</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            🔔 Notifications
+          </h3>
           {notifications.length > 0 ? (
             notifications.map((n, i) => (
               <Link
@@ -145,10 +170,15 @@ const DashboardNavbar = () => {
               </Link>
             ))
           ) : (
-            <p className="text-center text-gray-500 dark:text-gray-400">No notifications yet</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">
+              No notifications yet
+            </p>
           )}
+          
         </div>
+        
       )}
+      
     </div>
   );
 };
