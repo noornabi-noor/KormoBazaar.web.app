@@ -6,6 +6,7 @@ import CommunitySection from "../CommunitySection/CommunitySection";
 import WeeklyPaymentSection from "../WeeklyPaymentSection/WeeklyPaymentSection";
 import TopWorkers from "../TopWorkers/TopWorkers";
 import TestimonialSection from "../TestimonialSection/TestimonialSection";
+import FaqPage from "../FaqPage/FaqPage";
 
 const Home = () => {
   return (
@@ -16,6 +17,7 @@ const Home = () => {
       <WeeklyPaymentSection />
       <HowItWorks />
       <TestimonialSection />
+      <FaqPage/>
       <LiveStats />
     </div>
   );
