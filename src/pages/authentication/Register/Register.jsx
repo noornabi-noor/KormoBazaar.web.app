@@ -70,25 +70,44 @@ const Register = () => {
     setProfilePic(uploadedUrl);
 
     try {
-      // 👤 Create Firebase user
+      // 👤 1. Create Firebase user
       const result = await createUser(email, password);
+      const user = result.user;
 
-      // 🔄 Update Firebase profile
+      // 🔄 2. Update Firebase profile
       await updateUserProfile({
         displayName: name,
         photoURL: uploadedUrl,
       });
 
-      // 💾 Save to backend
-      await axiosSecure.post("/register", {
-        name,
-        email,
-        photoURL: uploadedUrl,
-        role,
-      });
+      // 🛡️ 3. Get ID token
+      const token = await user.getIdToken();
+
+      // 💾 4. Save to backend
+      await axiosSecure.post(
+        "/register",
+        {
+          name,
+          email,
+          photoURL: uploadedUrl,
+          role,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       toast.success(`✅ Registered as ${name}`);
-      setTimeout(() => navigate("/"), 1000);
+
+      // 🚀 5. Redirect based on role
+      let redirectTo = "/";
+      if (role === "worker") redirectTo = "/dashboard/workerHome";
+      else if (role === "buyer") redirectTo = "/dashboard/buyerHome";
+      else if (role === "admin") redirectTo = "/dashboard/adminHome";
+
+      setTimeout(() => navigate(redirectTo), 1500);
     } catch (err) {
       setError(err.message);
       toast.error(`❌ ${err.message}`);
@@ -100,23 +119,41 @@ const Register = () => {
       const result = await signInWithGoogle();
       const user = result.user;
 
-      // Extract name and photo
+      const token = await user.getIdToken();
       const name = user.displayName;
       const email = user.email;
       const photoURL = user.photoURL;
-      const role = "buyer"; // or prompt the user to select role if needed
+      const role = "buyer"; // Default role (can be made dynamic later)
 
-      // 💾 Save to backend
-      await axiosSecure.post("/register", {
-        name,
-        email,
-        photoURL,
-        role,
+      // 💾 Save to backend if not exists
+      await axiosSecure
+        .post(
+          "/register",
+          { name, email, photoURL, role },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .catch((err) => {
+          if (err.response?.status !== 409) throw err; // Ignore conflict
+        });
+
+      // ✅ Get role from backend
+      const roleRes = await axiosSecure.get(`/users/role/${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success(`✅ Signed in as ${name}`);
+      const userRole = roleRes.data.role;
+
+      toast.success(`✅ Signed in as ${userRole}`);
+
+      let redirectTo = "/";
+      if (userRole === "worker") redirectTo = "/dashboard/workerHome";
+      else if (userRole === "buyer") redirectTo = "/dashboard/buyerHome";
+      else if (userRole === "admin") redirectTo = "/dashboard/adminHome";
+
+      setTimeout(() => navigate(redirectTo), 1500);
       setError("");
-      setTimeout(() => navigate("/"), 1000);
     } catch (error) {
       setError(error.message);
       toast.error(`❌ ${error.message}`);

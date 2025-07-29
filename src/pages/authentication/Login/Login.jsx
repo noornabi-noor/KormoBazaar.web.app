@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { use, useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { FcGoogle } from "react-icons/fc";
 
@@ -8,15 +8,20 @@ import { AuthContext } from "../../../contexts/AuthContext/AuthContext";
 
 import Lottie from "lottie-react";
 import loginLottie from "../../../assets/LottiesFile/login.json";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
+
 
 const Login = () => {
   const [error, setError] = useState("");
 
   const { signIn, signInWithGoogle, passwordReset } = use(AuthContext);
 
+
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from || "/";
+
+  const axiosSecure = useAxiosSecure();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -35,33 +40,86 @@ const Login = () => {
     try {
       const result = await signIn(email, password);
       const user = result.user;
-      toast.success(`✅ Logged in as ${user.displayName || user.email}`);
+
+      // 🛡️ Get token for secured request
+      const token = await user.getIdToken();
+
+      // 🔍 Use axiosSecure to fetch role
+      const roleRes = await axiosSecure.get(`/users/role/${user.email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const role = roleRes.data.role;
+
+      toast.success(`✅ Logged in as ${role}`);
+      form.reset();
+
+      // 🔀 Redirect based on role
+      let redirectTo = "/";
+      if (role === "worker") redirectTo = "/dashboard/workerHome";
+      else if (role === "buyer") redirectTo = "/dashboard/buyerHome";
+      else if (role === "admin") redirectTo = "/dashboard/adminHome";
 
       setTimeout(() => {
-        navigate(from);
-      }, 2000);
+        navigate(redirectTo);
+      }, 1500);
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.message);
       toast.error(`❌ ${err.message}`);
     }
-
-    form.reset();
   };
 
-  const handleGoogleSignIn = () => {
-    signInWithGoogle()
-      .then((result) => {
-        const user = result.user;
-        toast.success(`✅ Signed in as ${user.displayName}`);
-        setTimeout(() => {
-          navigate(from);
-        }, 1000);
-        setError("");
-      })
-      .catch((error) => {
-        setError(error.message);
-        toast.error(`❌ ${error.message}`);
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithGoogle();
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      // ✅ 1. Try to insert user if not exists
+      await axiosSecure
+        .post(
+          "/register",
+          {
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: "buyer", // Default role or detect based on email logic
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .catch((err) => {
+          if (err.response?.status !== 409) {
+            throw err; // Only ignore "already exists"
+          }
+        });
+
+      // ✅ 2. Get role
+      const roleRes = await axiosSecure.get(`/users/role/${user.email}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+
+      const role = roleRes.data.role;
+
+      // ✅ 3. Redirect
+      toast.success(`✅ Signed in as ${role}`);
+
+      let redirectTo = "/";
+      if (role === "worker") redirectTo = "/dashboard/workerHome";
+      else if (role === "buyer") redirectTo = "/dashboard/buyerHome";
+      else if (role === "admin") redirectTo = "/dashboard/adminHome";
+
+      setTimeout(() => {
+        navigate(redirectTo);
+      }, 1500);
+
+      setError("");
+    } catch (error) {
+      setError(error.message);
+      toast.error(`❌ ${error.message}`);
+    }
   };
 
   const handleResetPassword = async () => {
