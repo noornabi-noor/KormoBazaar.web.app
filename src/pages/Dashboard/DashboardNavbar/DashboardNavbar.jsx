@@ -99,7 +99,7 @@ const DashboardNavbar = () => {
           Role: {role}
         </div>
 
-        <Link to="/myProfile" className="flex items-center gap-2">
+        <Link to="/dashboard/myProfile" className="flex items-center gap-2">
           <img
             src={user?.photoURL || "/default-avatar.png"}
             alt="Avatar"

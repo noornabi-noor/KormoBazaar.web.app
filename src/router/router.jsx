@@ -72,7 +72,8 @@ export const router = createBrowserRouter([
       </PrivateRoutes>
     ),
     children: [
-      { index: true, element: <DashboardRedirect /> }, 
+      { index: true, element: <DashboardRedirect /> },
+      { path: "myProfile", Component: MyProfile, }, 
 
       //Admin
       { path: "adminHome", element: <AdminHome /> },
