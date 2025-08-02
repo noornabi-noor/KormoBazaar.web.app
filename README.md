@@ -1,9 +1,5 @@
-
----
-
 ## ✅ **Server Side – `README.md`**
 
-```md
 # Micro Tasking and Earning Platform - Server
 
 This is the backend (Node.js + Express) for the Micro Tasking and Earning Platform, built to support Workers, Buyers, and Admins with secure APIs, Role-based access control, and dynamic coin economy.
@@ -12,7 +8,7 @@ This is the backend (Node.js + Express) for the Micro Tasking and Earning Platfo
 
 ## 🌐 API Base URL
 
-> `https://your-server-url.vercel.app`
+> `https://kormobazaar-server-kgdssdrax-md-noornabis-projects.vercel.app`
 
 ---
 
