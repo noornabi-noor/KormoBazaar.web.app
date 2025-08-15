@@ -6,7 +6,7 @@ import { Link } from "react-router";
 const CommunitySection = () => {
   return (
     <section className="py-25 sm:py-30 lg:py-36 bg-gradient-to-br from-gray-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 mt-12 rounded-2xl transition-colors duration-300">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center px-6 gap-10">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center px-6 gap-10">
         {/* Left Text */}
         <motion.div
           initial={{ opacity: 0, x: -60 }}

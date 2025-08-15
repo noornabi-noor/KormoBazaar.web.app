@@ -40,7 +40,7 @@ const testimonials = [
 const TestimonialSection = () => {
   return (
     <section className="py-20 bg-blue-50 dark:bg-gray-900 mt-12 rounded-2xl transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-6 ">
           💬<span className="text-primary-gradient dark:text-blue-300">What Our Users Say</span> 
         </h2>

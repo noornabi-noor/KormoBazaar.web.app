@@ -5,7 +5,7 @@ import earnMoney from "../../../assets/earnMoney.mp4";
 const WeeklyPaymentSection = () => {
   return (
     <section className="py-20 bg-gradient-to-br from-blue-50 via-purple-100 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 mt-12 rounded-2xl transition-colors duration-300">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center px-6 gap-12">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center px-6 gap-12">
         {/* 🖼 Left Video */}
         <motion.video
           src={earnMoney}
