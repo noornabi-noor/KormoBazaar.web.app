@@ -11,9 +11,10 @@ import {
 
 const HowItWorks = () => {
   return (
-    <section className="max-w-7xl mx-auto py-20 bg-gradient-to-br from-gray-200 via-white to-blue-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl mt-12 transition-colors duration-300">
+    <section className=" py-20 bg-gradient-to-br from-gray-200 via-white to-blue-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl mt-12 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold text-center mb-8 text-primary-gradient dark:text-indigo-300">
-        How It Works
+        ⚙️ How It Works
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
         {/* Worker */}
@@ -78,6 +79,7 @@ const HowItWorks = () => {
             </li>
           </ul>
         </motion.div>
+      </div>
       </div>
     </section>
   );

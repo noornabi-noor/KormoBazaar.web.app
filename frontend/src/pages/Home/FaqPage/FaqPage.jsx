@@ -32,8 +32,8 @@ const faqs = [
 
 const FaqPage = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 py-16 mt-12 bg-gradient-to-r from-blue-100 to-green-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl">
-      <div >
+    <section className=" px-4 py-16 mt-12 bg-gradient-to-r from-blue-100 to-green-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl">
+      <div className="max-w-7xl mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
