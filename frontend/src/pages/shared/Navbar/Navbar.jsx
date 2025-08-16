@@ -35,6 +35,9 @@ const Navbar = () => {
         <NavLink to="/about">About Us</NavLink>
       </li>
       <li>
+        <NavLink to="/contact">Contact</NavLink>
+      </li>
+      <li>
         <a
           href="https://github.com/noornabi-noor"
           target="_blank"

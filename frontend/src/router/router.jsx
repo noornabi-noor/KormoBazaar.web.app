@@ -25,11 +25,14 @@ import ManageTasks from "../pages/Dashboard/ManageTasks/ManageTasks";
 import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
 import DashboardLayout from "../layouts/DashboardLayout";
 import AllTasks from "../pages/AllTasks/AllTasks";
+import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import ContactPage from "../pages/ContactPage/ContactPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayouts,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -49,6 +52,7 @@ export const router = createBrowserRouter([
       },
       { path: "task/:id", Component: TaskDetails },
       { path: "alltasks", Component: AllTasks },
+      { path: "contact", Component: ContactPage },
     ],
   },
   {

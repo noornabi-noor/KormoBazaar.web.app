@@ -9,6 +9,7 @@ import {
   FaFileUpload,
   FaClipboardCheck,
   FaArrowLeft,
+  FaUserCircle,
 } from "react-icons/fa";
 
 const DashboardSidebar = ({ role }) => {
@@ -18,8 +19,8 @@ const DashboardSidebar = ({ role }) => {
       <div className="md:hidden h-full bg-white dark:bg-gray-900 overflow-y-auto">
         <div className="flex flex-col items-center py-4 space-y-6 h-full">
           {/* Mobile Back Arrow */}
-          <NavLink 
-            to="/" 
+          <NavLink
+            to="/"
             className="text-xl text-gray-700 dark:text-gray-200 hover:text-blue-600 p-2"
           >
             <FaArrowLeft />
@@ -32,8 +33,8 @@ const DashboardSidebar = ({ role }) => {
       <div className="hidden md:block h-full overflow-y-auto">
         <div className="p-4">
           <div className="flex items-center gap-2 mb-6">
-            <NavLink 
-              to="/" 
+            <NavLink
+              to="/"
               className="text-xl text-gray-700 dark:text-gray-200 hover:text-blue-600"
             >
               <FaArrowLeft />
@@ -52,7 +53,7 @@ const DashboardSidebar = ({ role }) => {
 // Mobile Icon Links Component
 const MobileIconLinks = ({ role }) => {
   const links = [];
-  
+
   if (role === "admin") {
     links.push(
       { to: "/dashboard/adminHome", icon: <FaHome />, label: "Admin" },
@@ -70,7 +71,11 @@ const MobileIconLinks = ({ role }) => {
     links.push(
       { to: "/dashboard/workerHome", icon: <FaHome />, label: "Home" },
       { to: "/dashboard/taskList", icon: <FaTasks />, label: "Tasks" },
-      { to: "/dashboard/mySubmission", icon: <FaClipboardCheck />, label: "Submissions" }
+      {
+        to: "/dashboard/mySubmission",
+        icon: <FaClipboardCheck />,
+        label: "Submissions",
+      }
     );
   }
 
@@ -98,28 +103,82 @@ const SidebarLinks = ({ role }) => {
     <ul className="space-y-2">
       {role === "admin" && (
         <>
-          <SidebarLink to="/dashboard/adminHome" icon={<FaHome />} label="Admin Home" />
-          <SidebarLink to="/dashboard/manageUsers" icon={<FaUsers />} label="Manage Users" />
-          <SidebarLink to="/dashboard/manageTasks" icon={<FaTasks />} label="Manage Tasks" />
+          <SidebarLink
+            to="/dashboard/adminHome"
+            icon={<FaHome />}
+            label="Admin Home"
+          />
+          <SidebarLink
+            to="/dashboard/manageUsers"
+            icon={<FaUsers />}
+            label="Manage Users"
+          />
+          <SidebarLink
+            to="/dashboard/manageTasks"
+            icon={<FaTasks />}
+            label="Manage Tasks"
+          />
         </>
       )}
       {role === "buyer" && (
         <>
-          <SidebarLink to="/dashboard/buyerHome" icon={<FaHome />} label="Home" />
-          <SidebarLink to="/dashboard/myTasks" icon={<FaListAlt />} label="My Tasks" />
-          <SidebarLink to="/dashboard/addTasks" icon={<FaFileUpload />} label="Add Tasks" />
-          <SidebarLink to="/dashboard/purchaseCoins" icon={<FaCoins />} label="Purchase Coins" />
-          <SidebarLink to="/dashboard/paymentHistory" icon={<FaFileInvoiceDollar />} label="Payment History" />
+          <SidebarLink
+            to="/dashboard/buyerHome"
+            icon={<FaHome />}
+            label="Home"
+          />
+          <SidebarLink
+            to="/dashboard/myTasks"
+            icon={<FaListAlt />}
+            label="My Tasks"
+          />
+          <SidebarLink
+            to="/dashboard/addTasks"
+            icon={<FaFileUpload />}
+            label="Add Tasks"
+          />
+          <SidebarLink
+            to="/dashboard/purchaseCoins"
+            icon={<FaCoins />}
+            label="Purchase Coins"
+          />
+          <SidebarLink
+            to="/dashboard/paymentHistory"
+            icon={<FaFileInvoiceDollar />}
+            label="Payment History"
+          />
         </>
       )}
       {role === "worker" && (
         <>
-          <SidebarLink to="/dashboard/workerHome" icon={<FaHome />} label="Home" />
-          <SidebarLink to="/dashboard/taskList" icon={<FaTasks />} label="Available Tasks" />
-          <SidebarLink to="/dashboard/mySubmission" icon={<FaClipboardCheck />} label="My Submissions" />
-          <SidebarLink to="/dashboard/withdraw" icon={<FaCoins />} label="Withdrawals" />
+          <SidebarLink
+            to="/dashboard/workerHome"
+            icon={<FaHome />}
+            label="Home"
+          />
+          <SidebarLink
+            to="/dashboard/taskList"
+            icon={<FaTasks />}
+            label="Available Tasks"
+          />
+          <SidebarLink
+            to="/dashboard/mySubmission"
+            icon={<FaClipboardCheck />}
+            label="My Submissions"
+          />
+          <SidebarLink
+            to="/dashboard/withdraw"
+            icon={<FaCoins />}
+            label="Withdrawals"
+          />
         </>
       )}
+
+      <SidebarLink
+        to="/dashboard/myProfile"
+        icon={<FaUserCircle className="text-gray-600" />}
+        label="MyProfile"
+      />
     </ul>
   );
 };
