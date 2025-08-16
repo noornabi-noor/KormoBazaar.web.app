@@ -42,7 +42,7 @@ const Banner = () => {
           return (
             <SwiperSlide key={index}>
               <div
-                className="relative w-full h-full bg-cover bg-center"
+                className="relative w-full h-full bg-center bg-cover"
                 style={{ backgroundImage: `url(${slide.image})` }}
               >
                 {/* Semi-transparent overlay for contrast */}
@@ -51,7 +51,9 @@ const Banner = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
                   <motion.h1
                     initial={{ y: 60, opacity: 0 }}
-                    animate={isActive ? { y: 0, opacity: 1 } : { y: 60, opacity: 0 }}
+                    animate={
+                      isActive ? { y: 0, opacity: 1 } : { y: 60, opacity: 0 }
+                    }
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-sky-600 via-blue-500 to-sky-600 bg-clip-text text-transparent drop-shadow-xl"
                   >
@@ -60,7 +62,11 @@ const Banner = () => {
 
                   <motion.p
                     initial={{ scale: 0.9, opacity: 0 }}
-                    animate={isActive ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
+                    animate={
+                      isActive
+                        ? { scale: 1, opacity: 1 }
+                        : { scale: 0.9, opacity: 0 }
+                    }
                     transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
                     className="mt-4 text-lg md:text-xl font-medium max-w-2xl text-blue-200 dark:text-gray-100 drop-shadow-md"
                   >
@@ -69,7 +75,11 @@ const Banner = () => {
 
                   <motion.button
                     initial={{ scale: 0, rotate: -10, opacity: 0 }}
-                    animate={isActive ? { scale: 1, rotate: 0, opacity: 1 } : { scale: 0, rotate: -10, opacity: 0 }}
+                    animate={
+                      isActive
+                        ? { scale: 1, rotate: 0, opacity: 1 }
+                        : { scale: 0, rotate: -10, opacity: 0 }
+                    }
                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                     className="mt-6 px-6 py-2 btn-secondary"
                   >

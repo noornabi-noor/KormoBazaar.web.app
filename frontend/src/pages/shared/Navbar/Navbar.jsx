@@ -49,7 +49,8 @@ const Navbar = () => {
 
   return (
     <div className="navbar navbar-theme ">
-      <div className="navbar-start">
+      <div className="max-w-7xl mx-auto w-full flex items-center">
+      <div className="navbar-start ">
         <div className="dropdown">
           <button tabIndex={0} className="btn btn-ghost lg:hidden">
             <svg
@@ -131,6 +132,7 @@ const Navbar = () => {
         </button>
       </div>
       <ToastContainer position="top-right" autoClose={2000} />
+    </div>
     </div>
   );
 };
