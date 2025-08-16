@@ -9,6 +9,7 @@ const TaskList = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchText, setSearchText] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const tasksPerPage = 6;
 
@@ -46,12 +47,26 @@ const TaskList = () => {
     );
   });
 
+  // 🔄 Sorting
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a.task_title.localeCompare(b.task_title);
+    } else {
+      return b.task_title.localeCompare(a.task_title);
+    }
+  });
+
   // 📌 Pagination
-  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
-  const currentTasks = filteredTasks.slice(
+  const totalPages = Math.ceil(sortedTasks.length / tasksPerPage);
+  const currentTasks = sortedTasks.slice(
     (currentPage - 1) * tasksPerPage,
     currentPage * tasksPerPage
   );
+
+  // 🖱️ Sort Button Toggle
+  const handleSortToggle = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow space-y-6 transition-colors duration-300">
@@ -69,7 +84,7 @@ const TaskList = () => {
       </div>
 
       {/* 🔍 Search Input */}
-      <div className="text-center">
+      <div className="text-center mt-5 flex flex-col md:flex-row gap-4 justify-center items-center">
         <input
           type="text"
           placeholder="Search by title, buyer or date..."
@@ -80,6 +95,14 @@ const TaskList = () => {
           }}
           className="input input-bordered w-full md:w-1/2"
         />
+
+        <button
+          type="button"
+          onClick={handleSortToggle}
+          className="btn btn-primary"
+        >
+          Sort ({sortOrder === "asc" ? "A → Z" : "Z → A"})
+        </button>
       </div>
 
       {/* Task Cards */}

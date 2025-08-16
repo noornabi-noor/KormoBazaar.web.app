@@ -9,6 +9,7 @@ const AllTasks = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchText, setSearchText] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const tasksPerPage = 6;
 
@@ -25,7 +26,12 @@ const AllTasks = () => {
   });
 
   if (isLoading)
-    return <span className="loading loading-spinner text-primary"></span>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
+
   if (error)
     return (
       <p className="text-center py-10 text-red-500 dark:text-red-400">
@@ -46,15 +52,29 @@ const AllTasks = () => {
     );
   });
 
+  // 🔄 Sorting
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a.task_title.localeCompare(b.task_title);
+    } else {
+      return b.task_title.localeCompare(a.task_title);
+    }
+  });
+
   // 📌 Pagination
-  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
-  const currentTasks = filteredTasks.slice(
+  const totalPages = Math.ceil(sortedTasks.length / tasksPerPage);
+  const currentTasks = sortedTasks.slice(
     (currentPage - 1) * tasksPerPage,
     currentPage * tasksPerPage
   );
 
+  // 🖱️ Sort Button Toggle
+  const handleSortToggle = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
   return (
-    <div className="mt-7  px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow space-y-6 transition-colors duration-300">
+    <div className="mt-7 px-6 py-10 bg-gradient-to-br from-sky-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow space-y-6 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
         {/* Heading */}
         <div className="text-center">
@@ -70,7 +90,7 @@ const AllTasks = () => {
         </div>
 
         {/* 🔍 Search Input */}
-        <div className="text-center mt-5">
+        <div className="text-center mt-5 flex flex-col md:flex-row gap-4 justify-center items-center">
           <input
             type="text"
             placeholder="Search by title, buyer or date..."
@@ -81,6 +101,14 @@ const AllTasks = () => {
             }}
             className="input input-bordered w-full md:w-1/2"
           />
+
+          <button
+            type="button"
+            onClick={handleSortToggle}
+            className="btn btn-primary"
+          >
+            Sort ({sortOrder === "asc" ? "A → Z" : "Z → A"})
+          </button>
         </div>
 
         {/* Task Cards */}
