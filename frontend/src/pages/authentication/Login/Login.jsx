@@ -10,12 +10,10 @@ import Lottie from "lottie-react";
 import loginLottie from "../../../assets/LottiesFile/login.json";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
-
 const Login = () => {
   const [error, setError] = useState("");
 
   const { signIn, signInWithGoogle, passwordReset } = use(AuthContext);
-
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,71 +136,82 @@ const Login = () => {
   };
 
   return (
-    <div className="work-sans-text min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
-      <div className="w-full max-w-md bg-base-300 p-8 rounded-xl shadow-lg">
-        <h2 className="text-primary-gradient text-center text-4xl mb-12">
-          Login
-        </h2>
+    <div>
+      <div className="work-sans-text min-h-screen bg-gray-100 flex flex-col-reverse lg:flex-row items-center justify-center p-4 gap-8">
+        <div className="w-full max-w-md bg-base-300 p-8 rounded-xl shadow-lg">
+          <h2 className="text-primary-gradient text-center text-4xl mb-12">
+            Login
+          </h2>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="input input-bordered w-full"
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="input input-bordered w-full"
-            required
-          />
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              className="input input-bordered w-full"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              className="input input-bordered w-full"
+              required
+            />
 
-          <p className="text-sm text-right">
+            <p className="text-sm text-right">
+              <button
+                type="button"
+                onClick={handleResetPassword}
+                className="text-blue-500 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </p>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
             <button
-              type="button"
-              onClick={handleResetPassword}
-              className="text-blue-500 hover:underline"
+              type="submit"
+              className="btn-secondary relative z-10 text-sm rounded-full w-full"
             >
-              Forgot Password?
+              Login
             </button>
-          </p>
+          </form>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div className="divider my-4">OR</div>
 
           <button
-            type="submit"
-            className="btn-secondary relative z-10 text-sm rounded-full w-full"
+            onClick={handleGoogleSignIn}
+            className="btn w-full flex items-center justify-center gap-2 border border-gray-300"
           >
-            Login
+            <FcGoogle className="text-xl" />
+            <span>Continue with Google</span>
           </button>
-        </form>
 
-        <div className="divider my-4">OR</div>
+          <p className="text-sm text-center mt-4">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-primary hover:underline">
+              Register here
+            </Link>
+          </p>
+        </div>
 
+        <div className="w-full max-w-md flex justify-center items-center">
+          <Lottie animationData={loginLottie} loop={true} />
+        </div>
+
+        <ToastContainer position="top-right" autoClose={2000} />
+      </div>
+
+      <div className="items-center text-center">
         <button
-          onClick={handleGoogleSignIn}
-          className="btn w-full flex items-center justify-center gap-2 border border-gray-300"
+          className="btn btn-sm btn-primary"
+          onClick={() => navigate(`/`)}
         >
-          <FcGoogle className="text-xl" />
-          <span>Continue with Google</span>
+          Back To Homepage
         </button>
-
-        <p className="text-sm text-center mt-4">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary hover:underline">
-            Register here
-          </Link>
-        </p>
       </div>
-
-      <div className="w-full max-w-md flex justify-center items-center">
-        <Lottie animationData={loginLottie} loop={true} />
-      </div>
-
-      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

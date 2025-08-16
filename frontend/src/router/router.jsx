@@ -14,11 +14,9 @@ import Payment from "../pages/Worker/Payment/Payment";
 import PurchaseCoins from "../pages/Worker/PurchaseCoins/PurchaseCoins";
 import PrivateRoutes from "../routes/PrivateRoutes";
 import PaymentHistory from "../pages/Buyer/PaymentHistory/PaymentHistory";
-import DashboardWrapper from "../pages/Dashboard/DashboardWrapper";
 import BuyerHome from "../pages/Buyer/BuyerHome/BuyerHome";
 import WorkerHome from "../pages/Worker/WorkerHome/WorkerHome";
 import DashboardRedirect from "../pages/Dashboard/DashboardRedirect";
-import UnifiedDashboard from "../pages/Dashboard/UnifiedDashboard";
 import WithdrawForm from "../pages/WithdrawForm/WithdrawForm";
 import AboutUs from "../pages/AboutUs/AboutUs";
 import AdminProtected from "../routes/AdminProtected";
@@ -26,6 +24,7 @@ import ManageUsers from "../pages/Dashboard/ManageUsers/ManageUsers";
 import ManageTasks from "../pages/Dashboard/ManageTasks/ManageTasks";
 import AdminHome from "../pages/Dashboard/AdminHome/AdminHome";
 import DashboardLayout from "../layouts/DashboardLayout";
+import AllTasks from "../pages/AllTasks/AllTasks";
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +47,8 @@ export const router = createBrowserRouter([
         path: "about",
         Component: AboutUs,
       },
+      { path: "task/:id", Component: TaskDetails },
+      { path: "alltasks", Component: AllTasks },
     ],
   },
   {

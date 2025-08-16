@@ -44,10 +44,10 @@ const WorkerHome = () => {
   // Loading state
   if (statsLoading || submissionsLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <span className="loading loading-spinner text-primary"></span>
-      </div>
-    );
+    <div className="flex items-center justify-center min-h-screen">
+      <span className="loading loading-spinner text-primary w-12 h-12"></span>
+    </div>
+  );
   }
 
   return (

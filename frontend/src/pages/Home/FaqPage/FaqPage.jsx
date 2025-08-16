@@ -38,7 +38,7 @@ const FaqPage = () => {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-3xl md:text-4xl font-bold text-center mb-12 text-primary-gradient dark:text-indigo-300"
+          className="text-3xl md:text-3xl font-bold text-center mb-12 text-primary-gradient dark:text-indigo-300"
         >
           <FaQuestionCircle className="inline-block mr-2 text-blue-600 dark:text-blue-400" />
           Frequently Asked Questions

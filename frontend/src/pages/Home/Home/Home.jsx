@@ -7,12 +7,15 @@ import WeeklyPaymentSection from "../WeeklyPaymentSection/WeeklyPaymentSection";
 import TopWorkers from "../TopWorkers/TopWorkers";
 import TestimonialSection from "../TestimonialSection/TestimonialSection";
 import FaqPage from "../FaqPage/FaqPage";
+import TaskList from "../../Worker/TaskList/TaskList";
+import AvailableTasks from "../AvailableTasks";
 
 const Home = () => {
   return (
     <div>
       <Banner />
       <TopWorkers />
+      <AvailableTasks/>
       <CommunitySection />
       <WeeklyPaymentSection />
       <HowItWorks />

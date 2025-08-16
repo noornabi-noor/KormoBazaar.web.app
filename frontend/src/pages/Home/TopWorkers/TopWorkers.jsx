@@ -17,11 +17,15 @@ const TopWorkers = () => {
     },
   });
 
+
   if (isLoading) {
-    return (
-      <span className="loading loading-spinner text-primary"></span>
-    );
-  }
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <span className="loading loading-spinner text-primary w-12 h-12"></span>
+    </div>
+  );
+}
+
 
   if (error) {
     return (
